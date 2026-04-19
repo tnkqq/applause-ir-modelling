@@ -1,0 +1,23 @@
+{
+  "run_id": "1.1",
+  "purpose": "Blackbody + Optics small-resolution power distribution",
+  "pipeline": [
+    "Blackbody",
+    "Optics"
+  ],
+  "temperatures_K": [
+    300,
+    350,
+    400
+  ],
+  "resolution_width_height": [
+    64,
+    48
+  ],
+  "FOV_rad": 0.5235987755982988,
+  "pitch_m": 1.7e-05,
+  "focal_length_m": 0.002124562058207322,
+  "area_m2": 1.8785e-10,
+  "omega_sr_projected": 0.21044680361923318,
+  "python": "3.12.7"
+}

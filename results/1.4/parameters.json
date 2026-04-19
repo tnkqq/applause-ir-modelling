@@ -1,0 +1,21 @@
+{
+  "run_id": "1.4",
+  "purpose": "Apply existing NUC model to ADC frames from run 1.3",
+  "source_run": "results/1.3",
+  "model": "models.NUC.NUC",
+  "temperatures_K": [
+    300,
+    320
+  ],
+  "resolution_width_height": [
+    8,
+    6
+  ],
+  "target_levels": [
+    -184.9375,
+    -149.22916666666666
+  ],
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.17.1"
+}

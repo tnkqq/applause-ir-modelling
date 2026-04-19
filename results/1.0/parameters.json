@@ -1,0 +1,24 @@
+{
+  "run_id": "1.0",
+  "purpose": "Blackbody temperature sweep: IR power incident on central pixel",
+  "model": "models.Blackbody.Blackbody",
+  "temperatures_K": [
+    280,
+    300,
+    320,
+    340,
+    360,
+    380,
+    400,
+    420
+  ],
+  "wavelength_range_m": [
+    8e-06,
+    1.4e-05
+  ],
+  "receiver_area_m2": 2.89e-10,
+  "omega_sr_projected": 0.75,
+  "phi_receiver_rad": 0,
+  "phi_source_rad": 0,
+  "python": "3.12.7"
+}

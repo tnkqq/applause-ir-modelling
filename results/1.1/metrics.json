@@ -1,0 +1,19 @@
+{
+  "temperatures_K": [
+    300,
+    350,
+    400
+  ],
+  "resolution_width_height": [
+    64,
+    48
+  ],
+  "array_shape_rows_cols": [
+    48,
+    64
+  ],
+  "corner_to_center_ratio_at_300K": 0.8281716253841841,
+  "corner_to_center_ratio_at_400K": 0.8281716253841841,
+  "mean_power_W_at_300K": 2.0334729472206187e-09,
+  "mean_power_W_at_400K": 6.549606940848331e-09
+}

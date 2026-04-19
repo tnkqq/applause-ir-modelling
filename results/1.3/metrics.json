@@ -1,0 +1,28 @@
+{
+  "temperatures_K": [
+    300,
+    320
+  ],
+  "resolution_width_height": [
+    8,
+    6
+  ],
+  "adc_frame_shapes_rows_cols": [
+    [
+      6,
+      8
+    ],
+    [
+      6,
+      8
+    ]
+  ],
+  "mean_adc_delta_320K_minus_300K": 35.70833333333334,
+  "run_stdout_lines": 584,
+  "numpy_version": "1.26.4",
+  "scipy_version": "1.17.1",
+  "mean_adc_300K": -184.9375,
+  "std_adc_300K": 108.45590621884084,
+  "mean_adc_320K": -149.22916666666666,
+  "std_adc_320K": 108.82061683939104
+}

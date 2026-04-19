@@ -1,0 +1,3 @@
+T=300 K -> shape=(48, 64), center=2.171514293252e-09 W, corner=1.798386521788e-09 W, corner/center=0.828172
+T=350 K -> shape=(48, 64), center=4.207739213408e-09 W, corner=3.484730223561e-09 W, corner/center=0.828172
+T=400 K -> shape=(48, 64), center=6.994223899892e-09 W, corner=5.792417775475e-09 W, corner/center=0.828172

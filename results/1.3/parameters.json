@@ -1,0 +1,41 @@
+{
+  "run_id": "1.3",
+  "purpose": "Small full sensor chain without NUC, using raw V_bol ADC channel",
+  "pipeline": [
+    "Blackbody",
+    "Optics",
+    "Bolometers",
+    "Readout",
+    "ADC"
+  ],
+  "temperatures_K": [
+    300,
+    320
+  ],
+  "resolution_width_height": [
+    8,
+    6
+  ],
+  "size_boundary_top_bottom_left_right": [
+    2,
+    2,
+    2,
+    2
+  ],
+  "size_blind_top_bottom_left_right": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "FOV_rad": 0.5235987755982988,
+  "pitch_m": 1.7e-05,
+  "focal_length_m": 0.0002655702572759153,
+  "area_m2": 1.8785e-10,
+  "omega_sr_projected": 0.21044680361923318,
+  "bolometer_seed": 123,
+  "adc_skim": null,
+  "python": "3.12.7",
+  "numpy": "1.26.4",
+  "scipy": "1.17.1"
+}

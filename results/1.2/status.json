@@ -1,0 +1,13 @@
+{
+  "run_id": "1.2",
+  "status": "failed",
+  "failed_stage": "Readout.process",
+  "pipeline": [
+    "Blackbody",
+    "Optics",
+    "Bolometers",
+    "Readout",
+    "ADC"
+  ],
+  "reason": "fsolve returned a one-element array assigned to a scalar NumPy cell"
+}

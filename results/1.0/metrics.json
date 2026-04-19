@@ -1,0 +1,9 @@
+{
+  "temperature_min_K": 280,
+  "temperature_max_K": 420,
+  "temperature_step_K": 20,
+  "power_min_W": 8.602584900394017e-09,
+  "power_max_W": 4.5557467622426804e-08,
+  "power_ratio_max_to_min": 5.2957882020252045,
+  "samples": 8
+}
