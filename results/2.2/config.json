@@ -1,0 +1,31 @@
+{
+  "run_id": "2.2",
+  "resolution_width_height": [
+    64,
+    48
+  ],
+  "temperatures_K": [
+    300,
+    340,
+    380
+  ],
+  "tolerances": [
+    1e-06,
+    3e-06,
+    1e-05,
+    3e-05,
+    0.0001
+  ],
+  "seeds": [
+    101,
+    202,
+    303
+  ],
+  "optics": "disabled for flat-field FPN isolation",
+  "adc_calibration": "series-wide analog_min..analog_max window with 3% margin",
+  "adc_window": {
+    "analog_min_V": -277.6276665086872,
+    "analog_max_V": 362.0462038535752,
+    "margin_fraction": 0.03
+  }
+}

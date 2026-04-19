@@ -1,0 +1,33 @@
+{
+  "run_id": "2.3",
+  "resolution_width_height": [
+    96,
+    72
+  ],
+  "background_K": 300,
+  "anomaly_K": 360,
+  "defect_rates": [
+    0,
+    0.001,
+    0.005,
+    0.01,
+    0.02
+  ],
+  "seeds": [
+    11,
+    22,
+    33,
+    44,
+    55
+  ],
+  "defect_types": [
+    "hot",
+    "cold"
+  ],
+  "adc_calibration": "base scene analog_min..analog_max window with 3% margin",
+  "adc_window": {
+    "analog_min_V": -10.888039509517887,
+    "analog_max_V": 90.58787077794948,
+    "margin_fraction": 0.03
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "run_id": "2.4",
+  "resolution_width_height": [
+    96,
+    72
+  ],
+  "calibration_temperatures_K": [
+    300,
+    360
+  ],
+  "test_temperatures_K": [
+    320,
+    340,
+    380
+  ],
+  "fractional_bits": [
+    3,
+    4,
+    5,
+    6,
+    "full"
+  ],
+  "tolerance": 3e-05,
+  "seed": 2400,
+  "adc_calibration": "calibration+test frames analog_min..analog_max window with 3% margin",
+  "adc_window": {
+    "analog_min_V": -71.47284132663232,
+    "analog_max_V": 170.00661384110757,
+    "margin_fraction": 0.03
+  }
+}

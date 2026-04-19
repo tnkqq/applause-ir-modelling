@@ -1,0 +1,33 @@
+{
+  "run_id": "2.0",
+  "pipeline": [
+    "Blackbody",
+    "Optics",
+    "Bolometers",
+    "VectorizedReadout",
+    "CalibratedADC"
+  ],
+  "resolution_width_height": [
+    160,
+    120
+  ],
+  "temperatures_K": [
+    280,
+    300,
+    320,
+    340,
+    360,
+    380,
+    400
+  ],
+  "tolerance": 1e-06,
+  "seed": 2001,
+  "adc_bits": 10,
+  "adc_calibration": "series-wide analog_min..analog_max window with 3% margin",
+  "readout_note": "Vectorized fixed-point equivalent of Readout equations; avoids per-pixel fsolve runtime.",
+  "adc_window": {
+    "analog_min_V": 2.2387744715848252,
+    "analog_max_V": 111.94068019877521,
+    "margin_fraction": 0.03
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "run_id": "2.5",
+  "resolution_width_height": [
+    96,
+    72
+  ],
+  "background_K": 300,
+  "anomaly_temperatures_K": [
+    320,
+    340,
+    360,
+    400
+  ],
+  "sizes": [
+    "small",
+    "medium",
+    "large"
+  ],
+  "tolerance_cases": {
+    "low": 1e-06,
+    "medium": 3e-05
+  },
+  "seed": 2500,
+  "nuc_calibration_K": [
+    300,
+    360
+  ],
+  "snr_noise_floor_adc": 1.0,
+  "adc_calibration": "per-tolerance calibration+all anomaly frames analog_min..analog_max window with 3% margin",
+  "adc_windows": {
+    "low": {
+      "analog_min_V": 11.992438786225355,
+      "analog_max_V": 111.0448441388394,
+      "margin_fraction": 0.03
+    },
+    "medium": {
+      "analog_min_V": -71.50050013941731,
+      "analog_max_V": 172.42917626620533,
+      "margin_fraction": 0.03
+    }
+  }
+}

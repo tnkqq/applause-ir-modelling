@@ -1,0 +1,19 @@
+{
+  "run_id": "2.1",
+  "resolution_width_height": [
+    160,
+    120
+  ],
+  "temperatures_K": [
+    300,
+    340,
+    380,
+    420
+  ],
+  "fov_cases_rad": {
+    "narrow": 0.3490658503988659,
+    "medium": 0.5235987755982988,
+    "wide": 0.7853981633974483
+  },
+  "stage": "Blackbody + vectorized Optics"
+}
