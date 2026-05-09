@@ -1,0 +1,9 @@
+{
+  "experiment_number": 6,
+  "title": "Временная инерционность ИК-датчика и усреднение последовательности кадров",
+  "varied_parameters": "alpha фильтра первого порядка и размер окна усреднения",
+  "main_metrics": "SNR-like, TPR, FPR, detection_delay, peak_amplitude_ratio",
+  "main_result": "Кадровое усреднение повышало средний SNR до 17.607, но высокая инерционность увеличивала задержку до 2.56 кадров.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_06_temporal_dynamics/detection_delay_vs_alpha.png",
+  "conclusion": "Усреднение полезно для статических объектов, но инерционность ухудшает скорость реакции на появляющиеся и движущиеся аномалии."
+}

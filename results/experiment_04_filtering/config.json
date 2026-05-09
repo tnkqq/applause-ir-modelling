@@ -1,0 +1,78 @@
+{
+  "seed": 3404,
+  "height": 96,
+  "width": 128,
+  "num_frames": 24,
+  "delta_t": 3.5,
+  "threshold_k": 3.0,
+  "experiment": "04_filtering",
+  "filters": [
+    {
+      "name": "none",
+      "label": "none",
+      "params": {}
+    },
+    {
+      "name": "gaussian",
+      "label": "gaussian_k3_s1",
+      "params": {
+        "ksize": 3,
+        "sigma": 1.0
+      }
+    },
+    {
+      "name": "gaussian",
+      "label": "gaussian_k5_s1p4",
+      "params": {
+        "ksize": 5,
+        "sigma": 1.4
+      }
+    },
+    {
+      "name": "median",
+      "label": "median_k3",
+      "params": {
+        "ksize": 3
+      }
+    },
+    {
+      "name": "median",
+      "label": "median_k5",
+      "params": {
+        "ksize": 5
+      }
+    },
+    {
+      "name": "bilateral",
+      "label": "bilateral_d5",
+      "params": {
+        "diameter": 5,
+        "sigma_color": 18,
+        "sigma_space": 5
+      }
+    },
+    {
+      "name": "bilateral",
+      "label": "bilateral_d9",
+      "params": {
+        "diameter": 9,
+        "sigma_color": 28,
+        "sigma_space": 7
+      }
+    },
+    {
+      "name": "nlm",
+      "label": "nlm_h5",
+      "params": {
+        "h": 5
+      }
+    },
+    {
+      "name": "nlm",
+      "label": "nlm_h10",
+      "params": {
+        "h": 10
+      }
+    }
+  ]
+}

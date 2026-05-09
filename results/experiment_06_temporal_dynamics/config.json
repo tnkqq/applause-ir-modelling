@@ -1,0 +1,27 @@
+{
+  "seed": 3606,
+  "height": 80,
+  "width": 112,
+  "num_frames": 80,
+  "delta_t": 4.5,
+  "event_start": 20,
+  "threshold_k": 3.0,
+  "experiment": "06_temporal_dynamics",
+  "alphas": [
+    0.0,
+    0.3,
+    0.6,
+    0.9
+  ],
+  "windows": [
+    1,
+    3,
+    5,
+    10
+  ],
+  "scenarios": [
+    "static",
+    "appearing",
+    "moving"
+  ]
+}

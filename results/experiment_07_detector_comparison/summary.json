@@ -1,0 +1,9 @@
+{
+  "experiment_number": 7,
+  "title": "Сравнение алгоритмов обнаружения температурных аномалий на синтетических ИК-кадрах",
+  "varied_parameters": "Алгоритм обнаружения и его параметры",
+  "main_metrics": "Precision, Recall, FPR, F1-score, IoU, AUC, runtime",
+  "main_result": "Рекомендуемый базовый алгоритм: `global_threshold` с параметром `k=2.5` (F1=0.872, IoU=0.964).",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_07_detector_comparison/f1_by_algorithm.png",
+  "conclusion": "Сравнение показывает компромисс между простотой, устойчивостью к фону, качеством сегментации и временем обработки."
+}

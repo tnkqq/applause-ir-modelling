@@ -1,0 +1,9 @@
+{
+  "experiment_number": 4,
+  "title": "Оценка эффективности фильтрации ИК-изображений перед обнаружением аномалий",
+  "varied_parameters": "Тип фильтра и параметры фильтра",
+  "main_metrics": "SNR before/after, TPR, FPR, Precision, IoU, contrast_change",
+  "main_result": "Наиболее устойчивый вариант по среднему IoU: `median_k3` с IoU=0.965 и SNR improvement=10.171.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_04_filtering/iou_by_filter.png",
+  "conclusion": "Фильтрация снижает шум, но слишком сильное сглаживание может уменьшать локальный контраст аномалии."
+}

@@ -1,0 +1,24 @@
+{
+  "seed": 3101,
+  "height": 96,
+  "width": 128,
+  "num_frames": 16,
+  "temp_min": 280.0,
+  "temp_max": 360.0,
+  "temp_step": 10.0,
+  "noise_sigma": 2.5,
+  "fpn_std": 0.8,
+  "experiment": "01_signal_validation",
+  "temperature_values_K": [
+    280.0,
+    290.0,
+    300.0,
+    310.0,
+    320.0,
+    330.0,
+    340.0,
+    350.0,
+    360.0
+  ],
+  "adc_model": "Blackbody 8-14 um -> calibrated 10-bit ADC with Gaussian noise and FPN"
+}

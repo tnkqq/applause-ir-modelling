@@ -1,0 +1,16 @@
+{
+  "experiment": "08_summary_report",
+  "include_pattern": "experiment_0[1-7]_*",
+  "experiments_found": [
+    "experiment_01_signal_validation",
+    "experiment_02_min_detectable_contrast",
+    "experiment_03_noise_influence",
+    "experiment_04_filtering",
+    "experiment_05_spatial_resolution",
+    "experiment_06_temporal_dynamics",
+    "experiment_07_detector_comparison"
+  ],
+  "summary_csv": "/home/tnkqq/Diplom/applause-ir-modelling/results/summary_all_experiments.csv",
+  "summary_md": "/home/tnkqq/Diplom/applause-ir-modelling/results/summary_report.md",
+  "figures_dir": "/home/tnkqq/Diplom/applause-ir-modelling/results/figures_for_diploma"
+}

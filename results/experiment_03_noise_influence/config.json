@@ -1,0 +1,25 @@
+{
+  "seed": 3303,
+  "height": 96,
+  "width": 128,
+  "num_frames": 10,
+  "delta_t": 4.0,
+  "background_k": 300.0,
+  "threshold_k": 3.0,
+  "experiment": "03_noise_influence",
+  "noise_types": [
+    "gaussian",
+    "fpn",
+    "quantization",
+    "defects",
+    "combined"
+  ],
+  "noise_levels": [
+    0,
+    1,
+    2,
+    4,
+    6,
+    8
+  ]
+}

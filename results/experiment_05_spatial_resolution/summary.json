@@ -1,0 +1,9 @@
+{
+  "experiment_number": 5,
+  "title": "Влияние пространственного разрешения и размера аномалии на обнаружение",
+  "varied_parameters": "Размер аномалии и fill_factor",
+  "main_metrics": "SNR-like, TPR, FPR, IoU, min_detectable_size",
+  "main_result": "Минимальный обнаруживаемый размер при TPR>0.9 и FPR<0.01: 1 px; малый fill_factor заметно ухудшает обнаружение.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_05_spatial_resolution/tpr_heatmap.png",
+  "conclusion": "Малые аномалии и неполное заполнение пикселя уменьшают локальный контраст и ухудшают обнаружение."
+}

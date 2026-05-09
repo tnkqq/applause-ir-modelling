@@ -1,0 +1,31 @@
+{
+  "seed": 3202,
+  "height": 96,
+  "width": 128,
+  "num_frames": 12,
+  "background_k": 300.0,
+  "noise_sigma": 2.2,
+  "fpn_std": 0.7,
+  "threshold_k": 3.0,
+  "iou_success": 0.3,
+  "experiment": "02_min_detectable_contrast",
+  "delta_t_values_K": [
+    0.1,
+    0.2,
+    0.5,
+    1.0,
+    1.5,
+    2.0,
+    3.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0
+  ],
+  "shapes": [
+    "circle",
+    "rectangle",
+    "gaussian"
+  ],
+  "detector": "global median + 3.0 * robust_sigma"
+}

@@ -1,0 +1,9 @@
+{
+  "experiment_number": 1,
+  "title": "Валидация модели формирования ИК-сигнала и метрик SNR/NETD",
+  "varied_parameters": "Температура однородной сцены",
+  "main_metrics": "mean_signal_adc, noise_std_adc, snr_for_temp_step, netd_K",
+  "main_result": "Средний наклон радиометрической характеристики составил 7.878 ADC/K; лучшая оценка NETD равна 0.239 K.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_01_signal_validation/signal_vs_temperature.png",
+  "conclusion": "Модель дает монотонный рост цифрового сигнала с температурой и позволяет оценивать NETD через наклон характеристики и шум."
+}

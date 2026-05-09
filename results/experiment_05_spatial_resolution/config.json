@@ -1,0 +1,24 @@
+{
+  "seed": 3505,
+  "height": 96,
+  "width": 128,
+  "num_frames": 10,
+  "delta_t": 6.0,
+  "threshold_k": 3.0,
+  "experiment": "05_spatial_resolution",
+  "sizes_px": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "fill_factors": [
+    0.1,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ]
+}

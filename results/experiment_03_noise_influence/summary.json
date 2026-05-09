@@ -1,0 +1,9 @@
+{
+  "experiment_number": 3,
+  "title": "Влияние уровня и типа шума на обнаружение температурной аномалии",
+  "varied_parameters": "Тип шума и интенсивность шума",
+  "main_metrics": "SNR-like, TPR, FPR, Precision, IoU",
+  "main_result": "Наиболее сильное среднее ухудшение IoU дал шум `combined`: средний IoU=0.497.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_03_noise_influence/iou_vs_noise_level.png",
+  "conclusion": "Рост шума снижает SNR и IoU; разные физические компоненты шума деградируют обнаружение по-разному."
+}

@@ -1,0 +1,188 @@
+{
+  "seed": 3707,
+  "height": 96,
+  "width": 128,
+  "repeats": 2,
+  "no_anomaly_frames": 10,
+  "experiment": "07_detector_comparison",
+  "dataset_size": 82,
+  "detector_grid": [
+    {
+      "algorithm": "global_threshold",
+      "label": "k=2",
+      "params": {
+        "k": 2.0
+      }
+    },
+    {
+      "algorithm": "global_threshold",
+      "label": "k=2.5",
+      "params": {
+        "k": 2.5
+      }
+    },
+    {
+      "algorithm": "global_threshold",
+      "label": "k=3",
+      "params": {
+        "k": 3.0
+      }
+    },
+    {
+      "algorithm": "global_threshold",
+      "label": "k=3.5",
+      "params": {
+        "k": 3.5
+      }
+    },
+    {
+      "algorithm": "global_threshold",
+      "label": "k=4",
+      "params": {
+        "k": 4.0
+      }
+    },
+    {
+      "algorithm": "adaptive_local",
+      "label": "k=1.5",
+      "params": {
+        "k": 1.5,
+        "sigma": 5.0
+      }
+    },
+    {
+      "algorithm": "adaptive_local",
+      "label": "k=2",
+      "params": {
+        "k": 2.0,
+        "sigma": 5.0
+      }
+    },
+    {
+      "algorithm": "adaptive_local",
+      "label": "k=2.5",
+      "params": {
+        "k": 2.5,
+        "sigma": 5.0
+      }
+    },
+    {
+      "algorithm": "adaptive_local",
+      "label": "k=3",
+      "params": {
+        "k": 3.0,
+        "sigma": 5.0
+      }
+    },
+    {
+      "algorithm": "adaptive_local",
+      "label": "k=3.5",
+      "params": {
+        "k": 3.5,
+        "sigma": 5.0
+      }
+    },
+    {
+      "algorithm": "otsu",
+      "label": "offset=-30",
+      "params": {
+        "offset": -30
+      }
+    },
+    {
+      "algorithm": "otsu",
+      "label": "offset=-15",
+      "params": {
+        "offset": -15
+      }
+    },
+    {
+      "algorithm": "otsu",
+      "label": "offset=0",
+      "params": {
+        "offset": 0
+      }
+    },
+    {
+      "algorithm": "otsu",
+      "label": "offset=15",
+      "params": {
+        "offset": 15
+      }
+    },
+    {
+      "algorithm": "otsu",
+      "label": "offset=30",
+      "params": {
+        "offset": 30
+      }
+    },
+    {
+      "algorithm": "dog",
+      "label": "k=1",
+      "params": {
+        "k": 1.0
+      }
+    },
+    {
+      "algorithm": "dog",
+      "label": "k=1.5",
+      "params": {
+        "k": 1.5
+      }
+    },
+    {
+      "algorithm": "dog",
+      "label": "k=2",
+      "params": {
+        "k": 2.0
+      }
+    },
+    {
+      "algorithm": "dog",
+      "label": "k=2.5",
+      "params": {
+        "k": 2.5
+      }
+    },
+    {
+      "algorithm": "dog",
+      "label": "k=3",
+      "params": {
+        "k": 3.0
+      }
+    },
+    {
+      "algorithm": "morph_global",
+      "label": "kernel=1",
+      "params": {
+        "k": 2.5,
+        "kernel": 1
+      }
+    },
+    {
+      "algorithm": "morph_global",
+      "label": "kernel=3",
+      "params": {
+        "k": 2.5,
+        "kernel": 3
+      }
+    },
+    {
+      "algorithm": "morph_global",
+      "label": "kernel=5",
+      "params": {
+        "k": 2.5,
+        "kernel": 5
+      }
+    },
+    {
+      "algorithm": "morph_global",
+      "label": "kernel=7",
+      "params": {
+        "k": 2.5,
+        "kernel": 7
+      }
+    }
+  ]
+}

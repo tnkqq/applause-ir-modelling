@@ -1,0 +1,9 @@
+{
+  "experiment_number": 2,
+  "title": "Оценка минимального обнаруживаемого температурного контраста dTmin",
+  "varied_parameters": "Температурный контраст и форма аномалии",
+  "main_metrics": "TPR, FPR, Precision, IoU, detection_probability",
+  "main_result": "Минимальный устойчиво обнаруживаемый контраст при IoU>0.3 и вероятности >=0.9: 2 K.",
+  "main_plot": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_02_min_detectable_contrast/detection_probability_vs_delta_t.png",
+  "conclusion": "При малом dT аномалия маскируется шумом; после порогового контраста вероятность обнаружения резко растет."
+}
