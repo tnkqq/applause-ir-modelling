@@ -1,0 +1,80 @@
+{
+  "source_experiment": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_03_noise_influence",
+  "output_directory": "/home/tnkqq/Diplom/applause-ir-modelling/results/experiment_03_noise_influence/quantization_analysis",
+  "old_files_modified": false,
+  "seed": 3303,
+  "frame_size": {
+    "width": 128,
+    "height": 96
+  },
+  "num_frames": 10,
+  "background_k": 300.0,
+  "delta_t": 4.0,
+  "threshold_k": 3.0,
+  "base_scene": "circle anomaly, size=16, weak_bg=True, same as experiment 03",
+  "reference_noise_model": "ideal ADC frame plus Gaussian noise with sigma=1.0 ADC, fpn_std=0, no defects",
+  "quantization_parameterization": {
+    "quant_step_adc_codes": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "meaning": "I_quantized = round(I_reference / quant_step) * quant_step, clipped to 10-bit ADC range",
+    "equivalent_num_levels": {
+      "1": 1024,
+      "2": 512,
+      "4": 256,
+      "8": 128,
+      "16": 64,
+      "32": 32,
+      "64": 16
+    }
+  },
+  "metrics": [
+    "mu_anom",
+    "mu_bg",
+    "sigma_bg",
+    "contrast",
+    "snr_like",
+    "TP/FP/TN/FN",
+    "TPR",
+    "FPR",
+    "Precision",
+    "F1",
+    "IoU",
+    "unique digital levels"
+  ],
+  "max_snr_like": {
+    "quant_step": 16,
+    "snr_like_mean": "infinite_or_undefined_due_to_zero_sigma_bg",
+    "sigma_bg_mean": 0.0,
+    "iou_mean": 1.0
+  },
+  "infinite_snr_like_steps": [
+    16,
+    32
+  ],
+  "max_iou": {
+    "quant_step": 1,
+    "iou_mean": 1.0,
+    "snr_like_mean": 22.940071482692993
+  },
+  "min_sigma_bg": {
+    "quant_step": 16,
+    "sigma_bg_mean": 0.0,
+    "snr_like_mean": "infinite_or_undefined_due_to_zero_sigma_bg"
+  },
+  "old_experiment_quantization_baseline": {
+    "noise_type": "quantization",
+    "snr_like_mean": 23.227029342156342,
+    "tpr_mean": 0.9957698815566836,
+    "fpr_mean": 0.0,
+    "iou_mean": 0.9957698815566836
+  },
+  "snr_like_interpretation": "SNR-like=(mu_anom-mu_bg)/sigma_bg can increase under coarse quantization when the background collapses into fewer digital levels and sigma_bg decreases faster than the anomaly-background contrast. This is a metric artifact, not automatic image improvement.",
+  "main_conclusion": "Quantization is not additive random noise. It discretizes the radiometric signal, can reduce background standard deviation, and may inflate SNR-like, while simultaneously producing stair-step structure, changing masks, and affecting IoU/TPR/F1. Therefore quantization must be evaluated with both radiometric statistics and segmentation metrics."
+}
