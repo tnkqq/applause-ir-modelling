@@ -1,0 +1,21 @@
+parameter,symbol,value,unit,source,note
+active_matrix_size,resolution,320x240,pixels,models/params.py,width x height
+total_matrix_size,size_total,326x246,pixels,derived from resolution size_boundary size_blind,includes blind and boundary pixels
+experimental_series3_frame_size,series3_frame,128x96,pixels,results/experiment_01..05/config.json and experiment_07,width x height
+dynamic_experiment_frame_size,experiment_06_frame,112x80,pixels,results/experiment_06_temporal_dynamics/config.json,width x height
+pixel_pitch,pitch,17,um,models/params.py and experiments/series3/common.py,17e-6 m
+pixel_sensitive_area,area,289,um^2,models/params.py,17 um x 17 um
+LWIR_range,lambd,8..14,um,models/params.py,blackbody integration range
+thermal_conductance,G_thermal_med,1e-7,W/K,models/params.py,median bolometer value
+thermal_capacity,C_thermal_med,5e-9,J/K,models/params.py,median bolometer value
+thermal_time_constant,tau,0.05,s,derived C_thermal_med/G_thermal_med,50 ms
+integration_time,t_int,0.01,s,models/params.py,10 ms
+accepted_frame_rate,frame_rate,100,Hz,derived 1/t_int,explicit passport assumption
+ADC_bits,adc_resolution,10,bit,models/params.py and experiments/series3/common.py,digital range 0..1023
+ADC_max_code,ADC_MAX,1023,ADC code,experiments/series3/common.py,2^10-1
+default_gaussian_noise_sigma,gaussian_sigma,2.0,ADC code,experiments/series3/common.py,default generate_adc_frame value
+experiment_01_noise_sigma,noise_sigma,2.5,ADC code,results/experiment_01_signal_validation/config.json,NETD validation
+experiment_02_noise_sigma,noise_sigma,2.2,ADC code,results/experiment_02_min_detectable_contrast/config.json,minimum contrast experiment
+experiment_06_noise_sigma,gaussian_sigma,3.0,ADC code,experiments/series3/run_experiment_06_temporal_dynamics.py,temporal dynamics sequence
+NETD_at_300K,NETD,0.359,K,results/experiment_01_signal_validation/metrics.csv,estimated metric not input constant
+best_NETD_280_360K,NETD,0.239,K,results/experiment_01_signal_validation/metrics.csv,best estimate at 360 K
