@@ -1,0 +1,86 @@
+{
+  "config": {
+    "seed": 3502,
+    "height": 96,
+    "width": 128,
+    "temperature_K": 320.0,
+    "modes": {
+      "none": {
+        "title": "Без виньетирования",
+        "fov_deg": 0.0,
+        "strength_order": 0.0
+      },
+      "weak": {
+        "title": "Слабое виньетирование",
+        "fov_deg": 24.0,
+        "strength_order": 1.0
+      },
+      "medium": {
+        "title": "Среднее виньетирование",
+        "fov_deg": 42.0,
+        "strength_order": 2.0
+      },
+      "strong": {
+        "title": "Сильное виньетирование",
+        "fov_deg": 68.0,
+        "strength_order": 3.0
+      }
+    },
+    "noise_sigma_for_extra_image_adc": 2.0
+  },
+  "summary": {
+    "strong_center_to_corner_drop_adc": 133.2850590175147,
+    "strong_center_to_corner_drop_percent": 56.48216989281376,
+    "strong_std_adc": 39.370910841747275
+  },
+  "records": [
+    {
+      "temperature_K": 320.0,
+      "vignetting_mode": "none",
+      "center_mean_adc": 241.28963400638355,
+      "edge_mean_adc": 241.28963400638352,
+      "corner_mean_adc": 241.28963400638355,
+      "center_to_corner_drop_adc": 0.0,
+      "center_to_corner_drop_percent": 0.0,
+      "radial_gradient_adc": -6.490220898684809e-14,
+      "std_adc": 5.684341886080802e-14,
+      "rmse_to_uniform": 0.0
+    },
+    {
+      "temperature_K": 320.0,
+      "vignetting_mode": "weak",
+      "center_mean_adc": 240.75135572785493,
+      "edge_mean_adc": 218.77676216494666,
+      "corner_mean_adc": 217.47992845092494,
+      "center_to_corner_drop_adc": 23.271427276929984,
+      "center_to_corner_drop_percent": 9.666166658365977,
+      "radial_gradient_adc": 30.762003094163852,
+      "std_adc": 6.885711381131245,
+      "rmse_to_uniform": 12.814843957811208
+    },
+    {
+      "temperature_K": 320.0,
+      "vignetting_mode": "medium",
+      "center_mean_adc": 239.54294079841588,
+      "edge_mean_adc": 178.28867999458154,
+      "corner_mean_adc": 175.2258905586368,
+      "center_to_corner_drop_adc": 64.31705023977909,
+      "center_to_corner_drop_percent": 26.849904249069162,
+      "radial_gradient_adc": 85.08425333166052,
+      "std_adc": 19.050950673522824,
+      "rmse_to_uniform": 37.09022555805913
+    },
+    {
+      "temperature_K": 320.0,
+      "vignetting_mode": "strong",
+      "center_mean_adc": 235.97722833674734,
+      "edge_mean_adc": 106.93895377296363,
+      "corner_mean_adc": 102.69216931923263,
+      "center_to_corner_drop_adc": 133.2850590175147,
+      "center_to_corner_drop_percent": 56.48216989281376,
+      "radial_gradient_adc": 176.45488926759487,
+      "std_adc": 39.370910841747275,
+      "rmse_to_uniform": 85.84255708471505
+    }
+  ]
+}

@@ -86,6 +86,13 @@ def main() -> None:
     records: list[dict] = []
     example_images: list[np.ndarray] = []
     example_titles: list[str] = []
+    noise_titles = {
+        "gaussian": "Гауссов шум",
+        "fpn": "FPN",
+        "quantization": "Квантование",
+        "defects": "Дефектные пиксели",
+        "combined": "Комбинированный шум",
+    }
 
     for noise_type in noise_types:
         for level in levels:
@@ -108,9 +115,9 @@ def main() -> None:
                 )
                 records.append(metrics)
                 if frame_idx == 0 and level == levels[-1]:
-                    save_heatmap(out_dir / "images" / f"example_{noise_type}.png", frame, f"{noise_type}, level {level}")
+                    save_heatmap(out_dir / "images" / f"example_{noise_type}.png", frame, f"{noise_titles[noise_type]}, уровень {level}")
                     example_images.extend([frame, result.mask.astype(float)])
-                    example_titles.extend([noise_type, f"{noise_type} mask"])
+                    example_titles.extend([noise_titles[noise_type], f"{noise_titles[noise_type]}: маска"])
 
     df = write_csv(out_dir / "metrics.csv", records)
     grouped = df.groupby(["noise_type", "noise_level"], as_index=False).agg(
@@ -131,30 +138,30 @@ def main() -> None:
 
     save_multi_line_plot(
         out_dir / "snr_vs_noise_level.png",
-        {nt: (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["snr_like"]) for nt in noise_types},
-        "SNR vs noise level",
-        "Noise level",
+        {noise_titles[nt]: (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["snr_like"]) for nt in noise_types},
+        "SNR от уровня шума",
+        "Уровень шума",
         "SNR-like",
     )
     save_multi_line_plot(
         out_dir / "tpr_fpr_vs_noise_level.png",
         {
-            f"{nt} TPR": (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["tpr"])
+            f"{noise_titles[nt]} TPR": (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["tpr"])
             for nt in noise_types
         }
         | {
-            f"{nt} FPR": (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["fpr"])
+            f"{noise_titles[nt]} FPR": (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["fpr"])
             for nt in noise_types
         },
-        "TPR/FPR vs noise level",
-        "Noise level",
-        "Metric value",
+        "TPR/FPR от уровня шума",
+        "Уровень шума",
+        "Значение метрики",
     )
     save_multi_line_plot(
         out_dir / "iou_vs_noise_level.png",
-        {nt: (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["iou"]) for nt in noise_types},
-        "IoU vs noise level",
-        "Noise level",
+        {noise_titles[nt]: (grouped[grouped.noise_type == nt]["noise_level"], grouped[grouped.noise_type == nt]["iou"]) for nt in noise_types},
+        "IoU от уровня шума",
+        "Уровень шума",
         "IoU",
     )
     save_montage(out_dir / "example_noise_types.png", example_images, example_titles, cols=2)

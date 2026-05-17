@@ -64,6 +64,17 @@ def detector_grid() -> list[tuple[str, str, dict]]:
     return grid
 
 
+def algorithm_title(algorithm: str) -> str:
+    titles = {
+        "global_threshold": "Глобальный порог",
+        "adaptive_local": "Локальный адаптивный порог",
+        "otsu": "Метод Otsu",
+        "dog": "DoG",
+        "morph_global": "Глобальный порог + морфология",
+    }
+    return titles.get(algorithm, algorithm)
+
+
 def run_detector(frame: np.ndarray, algorithm: str, params: dict):
     if algorithm == "global_threshold":
         return detect_global_threshold(frame, k=params["k"], min_area=5)
@@ -206,12 +217,13 @@ def main() -> None:
     roc_series = {}
     for algorithm in sorted(by_param["algorithm"].unique()):
         part = by_param[by_param.algorithm == algorithm].sort_values("fpr")
-        roc_series[algorithm] = (part["fpr"], part["recall"])
-    save_multi_line_plot(out_dir / "roc_curves.png", roc_series, "ROC-like curves", "FPR", "TPR")
+        roc_series[algorithm_title(algorithm)] = (part["fpr"], part["recall"])
+    save_multi_line_plot(out_dir / "roc_curves.png", roc_series, "ROC-подобные кривые", "FPR", "TPR")
     sorted_summary = summary.sort_values("f1", ascending=False)
-    save_bar_plot(out_dir / "f1_by_algorithm.png", sorted_summary["algorithm"].tolist(), sorted_summary["f1"].tolist(), "F1-score by algorithm", "F1-score")
-    save_bar_plot(out_dir / "iou_by_algorithm.png", sorted_summary["algorithm"].tolist(), sorted_summary["iou"].tolist(), "IoU by algorithm", "IoU")
-    save_bar_plot(out_dir / "runtime_by_algorithm.png", sorted_summary["algorithm"].tolist(), sorted_summary["runtime_s"].tolist(), "Runtime by algorithm", "Seconds per frame")
+    plot_algorithms = [algorithm_title(algorithm) for algorithm in sorted_summary["algorithm"].tolist()]
+    save_bar_plot(out_dir / "f1_by_algorithm.png", plot_algorithms, sorted_summary["f1"].tolist(), "F1-score по алгоритмам", "F1-score")
+    save_bar_plot(out_dir / "iou_by_algorithm.png", plot_algorithms, sorted_summary["iou"].tolist(), "IoU по алгоритмам", "IoU")
+    save_bar_plot(out_dir / "runtime_by_algorithm.png", plot_algorithms, sorted_summary["runtime_s"].tolist(), "Время обработки по алгоритмам", "Секунд на кадр")
 
     best_algo = sorted_summary.iloc[0]["algorithm"]
     best_param = sorted_summary.iloc[0]["best_parameter"]
@@ -220,11 +232,11 @@ def main() -> None:
     failure_id = int(best_df.sort_values("iou", ascending=True).iloc[0]["frame_id"])
     images = []
     titles = []
-    for label, frame_id in [("success", success_id), ("failure", failure_id)]:
+    for label, frame_id in [("Успешный пример", success_id), ("Неудачный пример", failure_id)]:
         item = next(item for item in dataset if item["id"] == frame_id)
         pred = predictions[(best_algo, best_param, frame_id)]
         images.extend([item["frame"], item["truth"].astype(float), pred.astype(float)])
-        titles.extend([f"{label} frame", "truth", "prediction"])
+        titles.extend([f"{label}: кадр", "Эталонная маска", "Найденная маска"])
     save_montage(out_dir / "success_failure_examples.png", images, titles, cols=3)
 
     recommendation = f"Рекомендуемый базовый алгоритм: `{best_algo}` с параметром `{best_param}` (F1={sorted_summary.iloc[0]['f1']:.3f}, IoU={sorted_summary.iloc[0]['iou']:.3f})."

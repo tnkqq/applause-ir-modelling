@@ -1,0 +1,143 @@
+{
+  "config": {
+    "seed": 3101,
+    "height": 96,
+    "width": 128,
+    "num_frames": 16,
+    "temp_min": 280.0,
+    "temp_max": 360.0,
+    "temp_step": 10.0,
+    "noise_sigma": 2.5,
+    "fpn_std": 0.8,
+    "block": "01_temperature_response",
+    "experiment": "01_signal_validation",
+    "temperature_values_K": [
+      280.0,
+      290.0,
+      300.0,
+      310.0,
+      320.0,
+      330.0,
+      340.0,
+      350.0,
+      360.0
+    ],
+    "adc_model": "Blackbody 8-14 um -> calibrated 10-bit ADC with Gaussian noise and FPN"
+  },
+  "summary": {
+    "monotonic_mean_signal": true,
+    "mean_slope_adc_per_K": 7.878125706425418,
+    "best_netd_K": 0.2388294697252611,
+    "mean_noise_std_adc": 2.39505264247614
+  },
+  "records": [
+    {
+      "temperature_K": 280.0,
+      "mean_signal_adc": 101.66424051920573,
+      "noise_std_adc": 2.3935808687004845,
+      "frame_mean_std_adc": 1.0292118083679411,
+      "min_adc": 97.3125,
+      "max_adc": 105.75,
+      "dynamic_range_adc": 8.4375,
+      "snr_for_temp_step": null,
+      "local_slope_adc_per_K": 5.755673726399739,
+      "netd_K": 0.4158645855344037
+    },
+    {
+      "temperature_K": 290.0,
+      "mean_signal_adc": 159.22097778320312,
+      "noise_std_adc": 2.4001570377568546,
+      "frame_mean_std_adc": 1.0106763558748408,
+      "min_adc": 155.0625,
+      "max_adc": 162.9375,
+      "dynamic_range_adc": 7.875,
+      "snr_for_temp_step": 23.980404764593622,
+      "local_slope_adc_per_K": 6.052020517985026,
+      "netd_K": 0.39658772316191165
+    },
+    {
+      "temperature_K": 300.0,
+      "mean_signal_adc": 222.70465087890625,
+      "noise_std_adc": 2.3901527141728462,
+      "frame_mean_std_adc": 1.0227419094612131,
+      "min_adc": 218.1875,
+      "max_adc": 226.1875,
+      "dynamic_range_adc": 8.0,
+      "snr_for_temp_step": 26.560509175528875,
+      "local_slope_adc_per_K": 6.653847249348959,
+      "netd_K": 0.3592136435663907
+    },
+    {
+      "temperature_K": 310.0,
+      "mean_signal_adc": 292.2979227701823,
+      "noise_std_adc": 2.3936579730532386,
+      "frame_mean_std_adc": 1.0200227718911503,
+      "min_adc": 288.5625,
+      "max_adc": 295.9375,
+      "dynamic_range_adc": 7.375,
+      "snr_for_temp_step": 29.07402505902133,
+      "local_slope_adc_per_K": 7.263528696695962,
+      "netd_K": 0.3295447809192338
+    },
+    {
+      "temperature_K": 320.0,
+      "mean_signal_adc": 367.9752248128255,
+      "noise_std_adc": 2.396762497438475,
+      "frame_mean_std_adc": 1.024842071929234,
+      "min_adc": 363.8125,
+      "max_adc": 372.25,
+      "dynamic_range_adc": 8.4375,
+      "snr_for_temp_step": 31.574802310835068,
+      "local_slope_adc_per_K": 7.873424275716144,
+      "netd_K": 0.304411703663775
+    },
+    {
+      "temperature_K": 330.0,
+      "mean_signal_adc": 449.7664082845052,
+      "noise_std_adc": 2.3986084334769844,
+      "frame_mean_std_adc": 1.0102268950523101,
+      "min_adc": 445.875,
+      "max_adc": 454.125,
+      "dynamic_range_adc": 8.25,
+      "snr_for_temp_step": 34.099431291132625,
+      "local_slope_adc_per_K": 8.486246490478518,
+      "netd_K": 0.2826465665554493
+    },
+    {
+      "temperature_K": 340.0,
+      "mean_signal_adc": 537.7001546223959,
+      "noise_std_adc": 2.3974578294763167,
+      "frame_mean_std_adc": 1.0145267507022264,
+      "min_adc": 533.6875,
+      "max_adc": 541.875,
+      "dynamic_range_adc": 8.1875,
+      "snr_for_temp_step": 36.677911601514296,
+      "local_slope_adc_per_K": 9.099113718668619,
+      "netd_K": 0.263482565841271
+    },
+    {
+      "temperature_K": 350.0,
+      "mean_signal_adc": 631.7486826578776,
+      "noise_std_adc": 2.394118835211421,
+      "frame_mean_std_adc": 1.0283485271542547,
+      "min_adc": 627.375,
+      "max_adc": 636.0625,
+      "dynamic_range_adc": 8.6875,
+      "snr_for_temp_step": 39.283149462869666,
+      "local_slope_adc_per_K": 9.708043162027991,
+      "netd_K": 0.24661188617040455
+    },
+    {
+      "temperature_K": 360.0,
+      "mean_signal_adc": 731.8610178629557,
+      "noise_std_adc": 2.3909775929986394,
+      "frame_mean_std_adc": 1.0241072713108625,
+      "min_adc": 726.9375,
+      "max_adc": 736.0625,
+      "dynamic_range_adc": 9.125,
+      "snr_for_temp_step": 41.8708797180832,
+      "local_slope_adc_per_K": 10.011233520507812,
+      "netd_K": 0.2388294697252611
+    }
+  ]
+}

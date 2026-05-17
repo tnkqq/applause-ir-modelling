@@ -1,0 +1,29 @@
+{
+  "seed": 3502,
+  "height": 96,
+  "width": 128,
+  "temperature_K": 320.0,
+  "modes": {
+    "none": {
+      "title": "Без виньетирования",
+      "fov_deg": 0.0,
+      "strength_order": 0.0
+    },
+    "weak": {
+      "title": "Слабое виньетирование",
+      "fov_deg": 24.0,
+      "strength_order": 1.0
+    },
+    "medium": {
+      "title": "Среднее виньетирование",
+      "fov_deg": 42.0,
+      "strength_order": 2.0
+    },
+    "strong": {
+      "title": "Сильное виньетирование",
+      "fov_deg": 68.0,
+      "strength_order": 3.0
+    }
+  },
+  "noise_sigma_for_extra_image_adc": 2.0
+}

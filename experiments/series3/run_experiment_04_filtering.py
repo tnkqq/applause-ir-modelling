@@ -58,6 +58,21 @@ def filter_grid() -> list[tuple[str, str, dict]]:
     ]
 
 
+def filter_title(label: str) -> str:
+    titles = {
+        "none": "Без фильтра",
+        "gaussian_k3_s1": "Гауссов фильтр k=3, sigma=1.0",
+        "gaussian_k5_s1p4": "Гауссов фильтр k=5, sigma=1.4",
+        "median_k3": "Медианный фильтр k=3",
+        "median_k5": "Медианный фильтр k=5",
+        "bilateral_d5": "Билатеральный фильтр d=5",
+        "bilateral_d9": "Билатеральный фильтр d=9",
+        "nlm_h5": "Non-local means h=5",
+        "nlm_h10": "Non-local means h=10",
+    }
+    return titles.get(label, label)
+
+
 def main() -> None:
     args = parse_args()
     out_dir = experiment_dir(4, "filtering")
@@ -109,9 +124,9 @@ def main() -> None:
             )
             records.append(metrics)
             if idx == 0 and label in {"none", "gaussian_k5_s1p4", "median_k3", "bilateral_d5", "nlm_h10"}:
-                save_heatmap(out_dir / "images" / f"filtered_{label}.png", filtered, label)
+                save_heatmap(out_dir / "images" / f"filtered_{label}.png", filtered, filter_title(label))
                 example_images.extend([filtered, result.mask.astype(float)])
-                example_titles.extend([label, f"{label} mask"])
+                example_titles.extend([filter_title(label), f"{filter_title(label)}: маска"])
 
     df = write_csv(out_dir / "metrics.csv", records)
     comparison = df.groupby(["filter", "label"], as_index=False).agg(
@@ -127,9 +142,10 @@ def main() -> None:
     comparison.to_csv(out_dir / "filter_comparison.csv", index=False)
     best_rows = comparison.sort_values("iou", ascending=False)
     labels = best_rows["label"].tolist()
-    save_bar_plot(out_dir / "snr_improvement_by_filter.png", labels, best_rows["snr_improvement"].tolist(), "SNR improvement by filter", "Delta SNR")
-    save_bar_plot(out_dir / "iou_by_filter.png", labels, best_rows["iou"].tolist(), "IoU by filter", "IoU")
-    save_bar_plot(out_dir / "tpr_fpr_by_filter.png", labels, (best_rows["tpr"] - best_rows["fpr"]).tolist(), "TPR-FPR by filter", "TPR - FPR")
+    plot_labels = [filter_title(label) for label in labels]
+    save_bar_plot(out_dir / "snr_improvement_by_filter.png", plot_labels, best_rows["snr_improvement"].tolist(), "Прирост SNR после фильтрации", "Delta SNR")
+    save_bar_plot(out_dir / "iou_by_filter.png", plot_labels, best_rows["iou"].tolist(), "IoU для разных фильтров", "IoU")
+    save_bar_plot(out_dir / "tpr_fpr_by_filter.png", plot_labels, (best_rows["tpr"] - best_rows["fpr"]).tolist(), "TPR-FPR для разных фильтров", "TPR - FPR")
     save_montage(out_dir / "filter_examples.png", example_images, example_titles, cols=2)
 
     best = best_rows.iloc[0]

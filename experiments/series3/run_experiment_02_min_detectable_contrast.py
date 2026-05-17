@@ -93,10 +93,10 @@ def main() -> None:
                 )
                 records.append(metrics)
                 if frame_idx == 0 and delta_t in example_deltas and shape == "circle":
-                    save_heatmap(out_dir / "images" / f"frame_{shape}_dT_{delta_t:g}K.png", frame, f"{shape}, dT={delta_t:g} K")
+                    save_heatmap(out_dir / "images" / f"frame_{shape}_dT_{delta_t:g}K.png", frame, f"Круг, Delta T={delta_t:g} K")
                     save_mask_png(out_dir / "images" / f"prediction_{shape}_dT_{delta_t:g}K.png", result.mask)
                     examples.extend([frame, truth.astype(float), result.mask.astype(float)])
-                    example_titles.extend([f"Frame dT={delta_t:g}", "Truth", "Detected"])
+                    example_titles.extend([f"Кадр, Delta T={delta_t:g} K", "Эталонная маска", "Найденная маска"])
 
     df = write_csv(out_dir / "metrics.csv", records)
     grouped = df.groupby("delta_t_K", as_index=False).agg(
@@ -109,16 +109,16 @@ def main() -> None:
     )
     grouped.to_csv(out_dir / "metrics_by_delta_t.csv", index=False)
 
-    save_line_plot(out_dir / "tpr_vs_delta_t.png", grouped["delta_t_K"], grouped["tpr"], "TPR vs delta T", "Delta T, K", "TPR")
-    save_line_plot(out_dir / "fpr_vs_delta_t.png", grouped["delta_t_K"], grouped["fpr"], "FPR vs delta T", "Delta T, K", "FPR")
-    save_line_plot(out_dir / "iou_vs_delta_t.png", grouped["delta_t_K"], grouped["iou"], "IoU vs delta T", "Delta T, K", "IoU")
+    save_line_plot(out_dir / "tpr_vs_delta_t.png", grouped["delta_t_K"], grouped["tpr"], "TPR от температурного контраста", "Delta T, K", "TPR")
+    save_line_plot(out_dir / "fpr_vs_delta_t.png", grouped["delta_t_K"], grouped["fpr"], "FPR от температурного контраста", "Delta T, K", "FPR")
+    save_line_plot(out_dir / "iou_vs_delta_t.png", grouped["delta_t_K"], grouped["iou"], "IoU от температурного контраста", "Delta T, K", "IoU")
     save_line_plot(
         out_dir / "detection_probability_vs_delta_t.png",
         grouped["delta_t_K"],
         grouped["detection_probability"],
-        "Detection probability vs delta T",
+        "Вероятность обнаружения от температурного контраста",
         "Delta T, K",
-        "P(IoU > threshold)",
+        "P(IoU > порог)",
     )
     save_montage(out_dir / "examples_low_mid_high_delta_t.png", examples, example_titles, cols=3)
 

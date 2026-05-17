@@ -1,0 +1,29 @@
+{
+  "seed": 3402,
+  "height": 96,
+  "width": 128,
+  "temperatures_K": [
+    300.0,
+    320.0,
+    350.0,
+    400.0
+  ],
+  "calibration_temperatures_K": [
+    300.0,
+    400.0
+  ],
+  "coeff_bits": [
+    3,
+    4,
+    5,
+    6,
+    "full"
+  ],
+  "sensor_effects": [
+    "pixel gain spread",
+    "offset spread",
+    "FPN",
+    "cos^4-like vignetting"
+  ],
+  "gaussian_noise_adc": 0.0
+}

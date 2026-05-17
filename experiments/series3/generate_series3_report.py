@@ -116,7 +116,7 @@ def record_frame_stats(number: int, frame: np.ndarray, mask: np.ndarray | None =
     REPRESENTATIVE_FRAME_STATS.append(row)
 
 
-def save_histogram(array: np.ndarray, filename: str, title: str, xlabel: str = "ADC code") -> str:
+def save_histogram(array: np.ndarray, filename: str, title: str, xlabel: str = "Код ADC") -> str:
     path = DOC_IMAGES / filename
     plt.figure(figsize=(7.2, 4.2))
     plt.hist(np.asarray(array, dtype=float).ravel(), bins=48, color="#3b6ea8", edgecolor="white")
@@ -130,7 +130,7 @@ def save_histogram(array: np.ndarray, filename: str, title: str, xlabel: str = "
     return f"images/{filename}"
 
 
-def save_report_heatmap(array: np.ndarray, filename: str, title: str, label: str = "ADC code") -> str:
+def save_report_heatmap(array: np.ndarray, filename: str, title: str, label: str = "Код ADC") -> str:
     path = DOC_IMAGES / filename
     save_heatmap(path, array, title, label)
     return f"images/{filename}"
@@ -154,7 +154,7 @@ def representative_images() -> dict[int, dict[str, str]]:
     record_frame_stats(1, frame)
     out[1] = {
         "heat": save_report_heatmap(frame, "series3_exp01_heatmap_320K.png", "Эксперимент 1: однородный кадр, 320 K"),
-        "hist": save_histogram(frame, "series3_exp01_hist_320K.png", "Эксперимент 1: histogram, 320 K"),
+        "hist": save_histogram(frame, "series3_exp01_hist_320K.png", "Эксперимент 1: гистограмма, 320 K"),
         "graph": copy_doc_image(RESULTS / "experiment_01_signal_validation" / "signal_vs_temperature.png", "series3_exp01_signal_vs_temperature.png"),
         "extra": copy_doc_image(RESULTS / "experiment_01_signal_validation" / "netd_estimation.png", "series3_exp01_netd_estimation.png"),
     }
@@ -165,8 +165,8 @@ def representative_images() -> dict[int, dict[str, str]]:
     record_frame_stats(2, frame, mask)
     out[2] = {
         "heat": save_report_heatmap(frame, "series3_exp02_heatmap_dT2.png", "Эксперимент 2: кадр с аномалией, dT=2 K"),
-        "hist": save_histogram(frame, "series3_exp02_hist_dT2.png", "Эксперимент 2: histogram, dT=2 K"),
-        "mask": save_report_heatmap(mask.astype(float), "series3_exp02_mask_dT2.png", "Эксперимент 2: истинная маска", "mask"),
+        "hist": save_histogram(frame, "series3_exp02_hist_dT2.png", "Эксперимент 2: гистограмма, dT=2 K"),
+        "mask": save_report_heatmap(mask.astype(float), "series3_exp02_mask_dT2.png", "Эксперимент 2: истинная маска", "Маска"),
         "graph": copy_doc_image(RESULTS / "experiment_02_min_detectable_contrast" / "detection_probability_vs_delta_t.png", "series3_exp02_detection_probability.png"),
     }
 
@@ -176,7 +176,7 @@ def representative_images() -> dict[int, dict[str, str]]:
     record_frame_stats(3, frame, mask)
     out[3] = {
         "heat": save_report_heatmap(frame, "series3_exp03_heatmap_combined_noise.png", "Эксперимент 3: комбинированный шум"),
-        "hist": save_histogram(frame, "series3_exp03_hist_combined_noise.png", "Эксперимент 3: histogram, combined noise"),
+        "hist": save_histogram(frame, "series3_exp03_hist_combined_noise.png", "Эксперимент 3: гистограмма, комбинированный шум"),
         "graph": copy_doc_image(RESULTS / "experiment_03_noise_influence" / "iou_vs_noise_level.png", "series3_exp03_iou_vs_noise_level.png"),
         "extra": copy_doc_image(RESULTS / "experiment_03_noise_influence" / "snr_vs_noise_level.png", "series3_exp03_snr_vs_noise_level.png"),
     }
@@ -187,8 +187,8 @@ def representative_images() -> dict[int, dict[str, str]]:
     filtered = apply_filter(raw, "median", {"ksize": 3})
     record_frame_stats(4, filtered, mask)
     out[4] = {
-        "heat": save_report_heatmap(filtered, "series3_exp04_heatmap_median_k3.png", "Эксперимент 4: median k=3"),
-        "hist": save_histogram(filtered, "series3_exp04_hist_median_k3.png", "Эксперимент 4: histogram после median k=3"),
+        "heat": save_report_heatmap(filtered, "series3_exp04_heatmap_median_k3.png", "Эксперимент 4: медианный фильтр k=3"),
+        "hist": save_histogram(filtered, "series3_exp04_hist_median_k3.png", "Эксперимент 4: гистограмма после медианного фильтра k=3"),
         "graph": copy_doc_image(RESULTS / "experiment_04_filtering" / "iou_by_filter.png", "series3_exp04_iou_by_filter.png"),
         "extra": copy_doc_image(RESULTS / "experiment_04_filtering" / "filter_examples.png", "series3_exp04_filter_examples.png"),
     }
@@ -198,9 +198,9 @@ def representative_images() -> dict[int, dict[str, str]]:
     frame, _ = generate_adc_frame(scene, rng, gaussian_sigma=2.5, fpn_std=0.8)
     record_frame_stats(5, frame, mask)
     out[5] = {
-        "heat": save_report_heatmap(frame, "series3_exp05_heatmap_size8_fill1.png", "Эксперимент 5: size=8, fill=1"),
-        "hist": save_histogram(frame, "series3_exp05_hist_size8_fill1.png", "Эксперимент 5: histogram, size=8, fill=1"),
-        "mask": save_report_heatmap(mask.astype(float), "series3_exp05_mask_size8_fill1.png", "Эксперимент 5: маска size=8", "mask"),
+        "heat": save_report_heatmap(frame, "series3_exp05_heatmap_size8_fill1.png", "Эксперимент 5: размер=8, fill=1"),
+        "hist": save_histogram(frame, "series3_exp05_hist_size8_fill1.png", "Эксперимент 5: гистограмма, размер=8, fill=1"),
+        "mask": save_report_heatmap(mask.astype(float), "series3_exp05_mask_size8_fill1.png", "Эксперимент 5: маска, размер=8", "Маска"),
         "graph": copy_doc_image(RESULTS / "experiment_05_spatial_resolution" / "tpr_heatmap.png", "series3_exp05_tpr_heatmap.png"),
     }
 
@@ -211,7 +211,7 @@ def representative_images() -> dict[int, dict[str, str]]:
     out[6] = {
         "heat": save_report_heatmap(frame, "series3_exp06_heatmap_dynamic_frame.png", "Эксперимент 6: репрезентативный кадр последовательности"),
         "hist": save_histogram(frame, "series3_exp06_hist_dynamic_frame.png", "Эксперимент 6: гистограмма репрезентативного кадра"),
-        "mask": save_report_heatmap(mask.astype(float), "series3_exp06_mask_dynamic_frame.png", "Эксперимент 6: маска аномалии", "mask"),
+        "mask": save_report_heatmap(mask.astype(float), "series3_exp06_mask_dynamic_frame.png", "Эксперимент 6: маска аномалии", "Маска"),
         "graph": copy_doc_image(RESULTS / "experiment_06_temporal_dynamics" / "detection_delay_vs_alpha.png", "series3_exp06_detection_delay_vs_alpha.png"),
         "extra": copy_doc_image(RESULTS / "experiment_06_temporal_dynamics" / "snr_vs_window_size.png", "series3_exp06_snr_vs_window.png"),
     }
@@ -223,7 +223,7 @@ def representative_images() -> dict[int, dict[str, str]]:
     out[7] = {
         "heat": save_report_heatmap(frame, "series3_exp07_heatmap_detector_frame.png", "Эксперимент 7: кадр для сравнения детекторов"),
         "hist": save_histogram(frame, "series3_exp07_hist_detector_frame.png", "Эксперимент 7: гистограмма кадра"),
-        "mask": save_report_heatmap(mask.astype(float), "series3_exp07_mask_detector_frame.png", "Эксперимент 7: истинная маска", "mask"),
+        "mask": save_report_heatmap(mask.astype(float), "series3_exp07_mask_detector_frame.png", "Эксперимент 7: истинная маска", "Маска"),
         "graph": copy_doc_image(RESULTS / "experiment_07_detector_comparison" / "f1_by_algorithm.png", "series3_exp07_f1_by_algorithm.png"),
         "extra": copy_doc_image(RESULTS / "experiment_07_detector_comparison" / "iou_by_algorithm.png", "series3_exp07_iou_by_algorithm.png"),
     }

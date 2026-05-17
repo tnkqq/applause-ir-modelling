@@ -217,7 +217,7 @@ def save_metric_plot(summary: pd.DataFrame, ycols: list[str], labels: list[str],
                     plt.annotate("inf\nsigma_bg=0", (step, plot_value), textcoords="offset points", xytext=(0, 8), ha="center", fontsize=8)
     plt.xscale("log", base=2)
     plt.xticks(QUANT_STEPS, [str(v) for v in QUANT_STEPS])
-    plt.xlabel("Quantization step, ADC codes")
+    plt.xlabel("Шаг квантования, коды ADC")
     plt.ylabel(ylabel)
     plt.title(title)
     if ylim_01:
@@ -233,17 +233,17 @@ def save_metric_plot(summary: pd.DataFrame, ycols: list[str], labels: list[str],
 def save_unique_levels_plot(hist_summary: pd.DataFrame) -> None:
     plt.figure(figsize=(7.6, 4.8))
     for col, label in [
-        ("unique_levels_frame_mean", "whole frame"),
-        ("unique_levels_bg_mean", "background"),
-        ("unique_levels_anom_mean", "anomaly"),
+        ("unique_levels_frame_mean", "Весь кадр"),
+        ("unique_levels_bg_mean", "Фон"),
+        ("unique_levels_anom_mean", "Аномалия"),
     ]:
         plt.plot(hist_summary["quant_step"], hist_summary[col], marker="o", linewidth=2.0, label=label)
     plt.xscale("log", base=2)
     plt.yscale("log")
     plt.xticks(QUANT_STEPS, [str(v) for v in QUANT_STEPS])
-    plt.xlabel("Quantization step, ADC codes")
-    plt.ylabel("Unique digital levels")
-    plt.title("Unique ADC levels vs quantization step")
+    plt.xlabel("Шаг квантования, коды ADC")
+    plt.ylabel("Число уникальных цифровых уровней")
+    plt.title("Число уникальных уровней ADC от шага квантования")
     plt.grid(True, alpha=0.3, which="both")
     plt.legend()
     plt.tight_layout()
@@ -264,14 +264,14 @@ def save_histograms(reference_frames: list[np.ndarray], truth: np.ndarray) -> No
         bg = np.concatenate(bg_values)
         anom = np.concatenate(anom_values)
         bins = np.arange(min(bg.min(), anom.min()) - quant_step, max(bg.max(), anom.max()) + 2 * quant_step, max(quant_step, 1))
-        ax.hist(bg, bins=bins, alpha=0.65, label="background", color="#4c78a8")
-        ax.hist(anom, bins=bins, alpha=0.65, label="anomaly", color="#f58518")
-        ax.set_title(f"quant_step={quant_step}")
-        ax.set_xlabel("ADC code")
-        ax.set_ylabel("Pixel count")
+        ax.hist(bg, bins=bins, alpha=0.65, label="Фон", color="#4c78a8")
+        ax.hist(anom, bins=bins, alpha=0.65, label="Аномалия", color="#f58518")
+        ax.set_title(f"шаг={quant_step}")
+        ax.set_xlabel("Код ADC")
+        ax.set_ylabel("Число пикселей")
         ax.grid(True, axis="y", alpha=0.25)
         ax.legend(fontsize=8)
-    fig.suptitle("Background and anomaly histograms by quantization step")
+    fig.suptitle("Гистограммы фона и аномалии для разных шагов квантования")
     fig.savefig(OUT_DIR / "quantization_analysis_histograms_by_quant_step.png", dpi=180)
     plt.close(fig)
 
@@ -289,7 +289,7 @@ def overlay_error(truth: np.ndarray, pred: np.ndarray) -> np.ndarray:
 def save_frames_comparison(reference: np.ndarray) -> None:
     steps = [1, 2, 4, 8, 16, 32, 64]
     images = [reference] + [quantize_by_step(reference, step) for step in steps]
-    titles = ["reference"] + [f"step={step}" for step in steps]
+    titles = ["Опорный кадр"] + [f"шаг={step}" for step in steps]
     vmin = min(float(np.min(img)) for img in images)
     vmax = max(float(np.max(img)) for img in images)
     fig, axes = plt.subplots(2, 4, figsize=(13.2, 6.4), constrained_layout=True)
@@ -297,8 +297,8 @@ def save_frames_comparison(reference: np.ndarray) -> None:
         im = ax.imshow(image, cmap="magma", vmin=vmin, vmax=vmax)
         ax.set_title(title)
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="ADC code")
-    fig.suptitle("Same frame with different quantization steps")
+    fig.colorbar(im, ax=axes, label="Код ADC")
+    fig.suptitle("Один кадр при разных шагах квантования")
     fig.savefig(OUT_DIR / "quantization_analysis_frames_comparison.png", dpi=180)
     plt.close(fig)
 
@@ -310,10 +310,10 @@ def save_error_maps(reference: np.ndarray) -> None:
     fig, axes = plt.subplots(2, 3, figsize=(11.5, 6.8), constrained_layout=True)
     for ax, error, step in zip(axes.ravel(), errors, steps):
         im = ax.imshow(error, cmap="coolwarm", vmin=-vmax, vmax=vmax)
-        ax.set_title(f"step={step}")
+        ax.set_title(f"шаг={step}")
         ax.set_axis_off()
     fig.colorbar(im, ax=axes, label="I_quantized - I_reference, ADC")
-    fig.suptitle("Quantization error maps")
+    fig.suptitle("Карты ошибки квантования")
     fig.savefig(OUT_DIR / "quantization_analysis_error_maps.png", dpi=180)
     plt.close(fig)
 
@@ -326,9 +326,9 @@ def save_masks_comparison(config: dict[str, Any], reference: np.ndarray, truth: 
         pred = detect_global_threshold(frame, k=float(config["threshold_k"]), min_area=5).mask
         metrics = binary_metrics(pred, truth)
         panels = [
-            ("Ground truth", truth.astype(float), "gray"),
-            ("Predicted mask", pred.astype(float), "gray"),
-            ("Overlay: TP green, FP red, FN blue", overlay_error(truth, pred), None),
+            ("Эталонная маска", truth.astype(float), "gray"),
+            ("Найденная маска", pred.astype(float), "gray"),
+            ("Наложение: TP зеленый, FP красный, FN синий", overlay_error(truth, pred), None),
         ]
         for col, (title, data, cmap) in enumerate(panels):
             ax = axes[row, col]
@@ -339,10 +339,10 @@ def save_masks_comparison(config: dict[str, Any], reference: np.ndarray, truth: 
             if row == 0:
                 ax.set_title(title)
             if col == 0:
-                ax.set_ylabel(f"step={step}\nIoU={metrics['iou']:.2f}\nTPR={metrics['tpr']:.2f}")
+                ax.set_ylabel(f"шаг={step}\nIoU={metrics['iou']:.2f}\nTPR={metrics['tpr']:.2f}")
             ax.set_xticks([])
             ax.set_yticks([])
-    fig.suptitle("Detection masks under different quantization steps")
+    fig.suptitle("Маски обнаружения при разных шагах квантования")
     fig.savefig(OUT_DIR / "quantization_analysis_masks_comparison.png", dpi=180)
     plt.close(fig)
 
@@ -351,15 +351,15 @@ def save_profiles(reference: np.ndarray, truth: np.ndarray) -> None:
     row = reference.shape[0] // 2
     xs = np.arange(reference.shape[1])
     plt.figure(figsize=(9.5, 5.2))
-    plt.plot(xs, reference[row, :], color="black", linewidth=2.0, label="reference")
+    plt.plot(xs, reference[row, :], color="black", linewidth=2.0, label="Опорный кадр")
     for step in [1, 4, 16, 64]:
-        plt.step(xs, quantize_by_step(reference, step)[row, :], where="mid", linewidth=1.6, label=f"step={step}")
+        plt.step(xs, quantize_by_step(reference, step)[row, :], where="mid", linewidth=1.6, label=f"шаг={step}")
     cols = np.where(truth[row, :])[0]
     if len(cols):
-        plt.axvspan(cols.min(), cols.max(), color="#f58518", alpha=0.14, label="anomaly region")
-    plt.xlabel("Pixel x through anomaly center")
-    plt.ylabel("ADC code")
-    plt.title("Central 1D profile: stair-step structure from quantization")
+        plt.axvspan(cols.min(), cols.max(), color="#f58518", alpha=0.14, label="Область аномалии")
+    plt.xlabel("Пиксель x через центр аномалии")
+    plt.ylabel("Код ADC")
+    plt.title("Центральный 1D-профиль: ступенчатость из-за квантования")
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
@@ -376,10 +376,10 @@ def save_background_zoom(reference: np.ndarray) -> None:
     fig, axes = plt.subplots(1, len(steps), figsize=(11.5, 3.2), constrained_layout=True)
     for ax, image, step in zip(axes, images, steps):
         im = ax.imshow(image, cmap="magma", vmin=vmin, vmax=vmax, interpolation="nearest")
-        ax.set_title(f"step={step}")
+        ax.set_title(f"шаг={step}")
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="ADC code")
-    fig.suptitle("Background crop: quantization makes the field more stair-stepped")
+    fig.colorbar(im, ax=axes, label="Код ADC")
+    fig.suptitle("Фрагмент фона: квантование делает поле более ступенчатым")
     fig.savefig(OUT_DIR / "quantization_analysis_background_zoom.png", dpi=180)
     plt.close(fig)
 
@@ -570,12 +570,12 @@ def main() -> None:
     summary.to_csv(OUT_DIR / "quantization_analysis_summary_by_step.csv", index=False)
     hist_summary.to_csv(OUT_DIR / "quantization_analysis_histogram_stats.csv", index=False)
 
-    save_metric_plot(summary, ["snr_like_mean"], ["SNR-like"], "SNR-like", "SNR-like vs quantization step", "quantization_analysis_snr_like_vs_quant_step.png")
-    save_metric_plot(summary, ["sigma_bg_mean"], ["sigma_bg"], "sigma_bg, ADC", "Background standard deviation vs quantization step", "quantization_analysis_sigma_bg_vs_quant_step.png")
-    save_metric_plot(summary, ["contrast_mean"], ["mu_anom - mu_bg"], "Contrast, ADC", "Mean anomaly-background contrast vs quantization step", "quantization_analysis_contrast_vs_quant_step.png")
-    save_metric_plot(summary, ["iou_mean"], ["IoU"], "IoU", "IoU vs quantization step", "quantization_analysis_iou_vs_quant_step.png", ylim_01=True)
-    save_metric_plot(summary, ["tpr_mean", "fpr_mean"], ["TPR", "FPR"], "Metric value", "TPR/FPR vs quantization step", "quantization_analysis_tpr_fpr_vs_quant_step.png", ylim_01=True)
-    save_metric_plot(summary, ["precision_mean", "f1_mean"], ["Precision", "F1-score"], "Metric value", "Precision/F1 vs quantization step", "quantization_analysis_precision_f1_vs_quant_step.png", ylim_01=True)
+    save_metric_plot(summary, ["snr_like_mean"], ["SNR-like"], "SNR-like", "SNR-like от шага квантования", "quantization_analysis_snr_like_vs_quant_step.png")
+    save_metric_plot(summary, ["sigma_bg_mean"], ["sigma_bg"], "sigma_bg, ADC", "STD фона от шага квантования", "quantization_analysis_sigma_bg_vs_quant_step.png")
+    save_metric_plot(summary, ["contrast_mean"], ["mu_anom - mu_bg"], "Контраст, ADC", "Средний контраст аномалия-фон от шага квантования", "quantization_analysis_contrast_vs_quant_step.png")
+    save_metric_plot(summary, ["iou_mean"], ["IoU"], "IoU", "IoU от шага квантования", "quantization_analysis_iou_vs_quant_step.png", ylim_01=True)
+    save_metric_plot(summary, ["tpr_mean", "fpr_mean"], ["TPR", "FPR"], "Значение метрики", "TPR/FPR от шага квантования", "quantization_analysis_tpr_fpr_vs_quant_step.png", ylim_01=True)
+    save_metric_plot(summary, ["precision_mean", "f1_mean"], ["Precision", "F1-score"], "Значение метрики", "Precision/F1 от шага квантования", "quantization_analysis_precision_f1_vs_quant_step.png", ylim_01=True)
     save_unique_levels_plot(hist_summary)
     save_histograms(reference_frames, truth)
 

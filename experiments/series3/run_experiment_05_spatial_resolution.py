@@ -84,9 +84,9 @@ def main() -> None:
                 )
                 records.append(metrics)
                 if frame_idx == 0 and fill in {0.25, 1.0} and size in {1, 8, 32}:
-                    save_heatmap(out_dir / "images" / f"frame_size_{size}_fill_{fill:g}.png", frame, f"size={size}, fill={fill:g}")
+                    save_heatmap(out_dir / "images" / f"frame_size_{size}_fill_{fill:g}.png", frame, f"Размер={size} px, fill_factor={fill:g}")
                     example_images.extend([frame, truth.astype(float), result.mask.astype(float)])
-                    example_titles.extend([f"{size}px fill {fill:g}", "truth", "detected"])
+                    example_titles.extend([f"{size} px, fill={fill:g}", "Эталонная маска", "Найденная маска"])
 
     df = write_csv(out_dir / "metrics.csv", records)
     grouped = df.groupby(["fill_factor", "size_px"], as_index=False).agg(
@@ -105,8 +105,8 @@ def main() -> None:
             row = grouped[(grouped.fill_factor == fill) & (grouped.size_px == size)].iloc[0]
             tpr_matrix[i, j] = row["tpr"]
             iou_matrix[i, j] = row["iou"]
-    save_heatmap_matrix(out_dir / "tpr_heatmap.png", tpr_matrix, [str(s) for s in sizes], [str(f) for f in fills], "TPR(size, fill factor)", "TPR")
-    save_heatmap_matrix(out_dir / "iou_heatmap.png", iou_matrix, [str(s) for s in sizes], [str(f) for f in fills], "IoU(size, fill factor)", "IoU")
+    save_heatmap_matrix(out_dir / "tpr_heatmap.png", tpr_matrix, [str(s) for s in sizes], [str(f) for f in fills], "TPR от размера и fill_factor", "TPR")
+    save_heatmap_matrix(out_dir / "iou_heatmap.png", iou_matrix, [str(s) for s in sizes], [str(f) for f in fills], "IoU от размера и fill_factor", "IoU")
 
     min_rows = []
     for fill in fills:
@@ -114,7 +114,7 @@ def main() -> None:
         min_size = int(subset["size_px"].iloc[0]) if len(subset) else np.nan
         min_rows.append({"fill_factor": fill, "min_detectable_size_px": min_size})
     min_df = write_csv(out_dir / "min_detectable_size.csv", min_rows)
-    save_line_plot(out_dir / "min_detectable_size.png", min_df["fill_factor"], min_df["min_detectable_size_px"], "Minimum detectable size vs fill factor", "Fill factor", "Minimum size, px")
+    save_line_plot(out_dir / "min_detectable_size.png", min_df["fill_factor"], min_df["min_detectable_size_px"], "Минимальный обнаруживаемый размер от fill_factor", "fill_factor", "Минимальный размер, px")
     save_montage(out_dir / "size_examples.png", example_images, example_titles, cols=3)
 
     valid = min_df.dropna()

@@ -134,14 +134,14 @@ def main() -> None:
     snr_by_window = df.groupby("window", as_index=False)["snr_like"].mean()
     delay_by_alpha = df.groupby("alpha", as_index=False)["detection_delay_frames"].mean()
     tpr_fpr_by_alpha = df.groupby("alpha", as_index=False).agg(tpr=("tpr", "mean"), fpr=("fpr", "mean"))
-    save_line_plot(out_dir / "snr_vs_window_size.png", snr_by_window["window"], snr_by_window["snr_like"], "SNR vs averaging window", "Window, frames", "SNR-like")
-    save_line_plot(out_dir / "detection_delay_vs_alpha.png", delay_by_alpha["alpha"], delay_by_alpha["detection_delay_frames"], "Detection delay vs alpha", "Alpha", "Delay, frames")
+    save_line_plot(out_dir / "snr_vs_window_size.png", snr_by_window["window"], snr_by_window["snr_like"], "SNR от окна усреднения", "Окно, кадров", "SNR-like")
+    save_line_plot(out_dir / "detection_delay_vs_alpha.png", delay_by_alpha["alpha"], delay_by_alpha["detection_delay_frames"], "Задержка обнаружения от alpha", "Alpha", "Задержка, кадров")
     save_multi_line_plot(
         out_dir / "tpr_fpr_vs_alpha.png",
         {"TPR": (tpr_fpr_by_alpha["alpha"], tpr_fpr_by_alpha["tpr"]), "FPR": (tpr_fpr_by_alpha["alpha"], tpr_fpr_by_alpha["fpr"])},
-        "TPR/FPR vs alpha",
+        "TPR/FPR от alpha",
         "Alpha",
-        "Metric value",
+        "Значение метрики",
     )
     amp_series = {
         f"alpha={alpha}": (
@@ -150,7 +150,7 @@ def main() -> None:
         )
         for alpha in alphas
     }
-    save_multi_line_plot(out_dir / "anomaly_amplitude_over_time.png", amp_series, "Anomaly amplitude over time", "Frame", "Contrast, ADC")
+    save_multi_line_plot(out_dir / "anomaly_amplitude_over_time.png", amp_series, "Амплитуда аномалии во времени", "Кадр", "Контраст, ADC")
     save_montage(out_dir / "example_sequence_frames.png", example_images, example_titles, cols=4)
 
     best_snr = float(snr_by_window["snr_like"].max())

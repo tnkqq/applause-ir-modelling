@@ -74,6 +74,21 @@ DISPLAY_TIMES = {
     "moving_with_noise_burst": [0, 30, 36, 42, 60, 79],
 }
 
+SCENARIO_TITLES = {
+    "static": "Статическая аномалия",
+    "appearing": "Появляющаяся аномалия",
+    "moving": "Движущаяся аномалия",
+    "appearing_and_growing": "Появление и рост",
+    "appearing_and_fading": "Появление и затухание",
+    "moving_fast": "Быстрое движение",
+    "moving_diagonal": "Диагональное движение",
+    "two_anomalies_static_dynamic": "Две аномалии",
+    "intermittent": "Прерывистая аномалия",
+    "background_drift": "Дрейф фона",
+    "moving_with_noise_burst": "Движение и всплеск шума",
+    "small_moving_target": "Малая движущаяся цель",
+}
+
 
 @dataclass
 class ScenarioSequence:
@@ -100,6 +115,11 @@ def normalize_config(config: dict[str, Any]) -> dict[str, Any]:
 
 def token(value: float) -> str:
     return f"{value:g}".replace(".", "p")
+
+
+def display_label(value: Any) -> str:
+    text = str(value)
+    return SCENARIO_TITLES.get(text, text)
 
 
 def ensure_inputs() -> None:
@@ -524,8 +544,8 @@ def fixed_scale_montage(images: list[np.ndarray], titles: list[str], path: Path,
             ax.set_title(titles[idx], fontsize=9)
         ax.set_axis_off()
     if last is not None:
-        fig.colorbar(last, ax=axes, label="ADC code")
-    fig.suptitle(f"{suptitle} (fixed color scale)", fontsize=12)
+        fig.colorbar(last, ax=axes, label="Код ADC")
+    fig.suptitle(f"{suptitle} (единая цветовая шкала)", fontsize=12)
     fig.savefig(path, dpi=180)
     plt.close(fig)
 
@@ -550,7 +570,7 @@ def plot_lines(summary: pd.DataFrame, x: str, y: str, group: str, path: Path, ti
     plt.figure(figsize=(8.4, 5.2))
     for label, sub in data.groupby(group):
         curve = sub.groupby(x, as_index=False)[y].mean().sort_values(x)
-        plt.plot(curve[x], curve[y], marker="o", linewidth=2.0, label=str(label))
+        plt.plot(curve[x], curve[y], marker="o", linewidth=2.0, label=display_label(label))
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
@@ -565,24 +585,24 @@ def plot_lines(summary: pd.DataFrame, x: str, y: str, group: str, path: Path, ti
 
 def plot_required_graphs(summary: pd.DataFrame, delay_tracking: pd.DataFrame) -> None:
     delay_alpha = summary[summary["scenario"].isin(APPEARING_SCENARIOS)].groupby(["scenario", "alpha"], as_index=False)["detection_delay_frames"].mean()
-    plot_lines(delay_alpha, "alpha", "detection_delay_frames", "scenario", FIG_DIR / "dynamic_extended_detection_delay_vs_alpha.png", "Detection delay vs alpha", "Alpha", "Delay, frames")
+    plot_lines(delay_alpha, "alpha", "detection_delay_frames", "scenario", FIG_DIR / "dynamic_extended_detection_delay_vs_alpha.png", "Задержка обнаружения от alpha", "Alpha", "Задержка, кадров")
 
     snr_window = summary.groupby(["scenario", "window"], as_index=False)["snr_like"].mean()
-    plot_lines(snr_window, "window", "snr_like", "scenario", FIG_DIR / "dynamic_extended_snr_vs_window.png", "SNR-like vs averaging window", "Window, frames", "SNR-like")
+    plot_lines(snr_window, "window", "snr_like", "scenario", FIG_DIR / "dynamic_extended_snr_vs_window.png", "SNR-like от окна усреднения", "Окно, кадров", "SNR-like")
 
     iou_window = summary[summary["scenario"].isin(MOVING_SCENARIOS)].groupby(["scenario", "window"], as_index=False)["iou"].mean()
-    plot_lines(iou_window, "window", "iou", "scenario", FIG_DIR / "dynamic_extended_iou_vs_window_moving_scenarios.png", "IoU vs averaging window for moving scenarios", "Window, frames", "IoU", ylim_01=True)
+    plot_lines(iou_window, "window", "iou", "scenario", FIG_DIR / "dynamic_extended_iou_vs_window_moving_scenarios.png", "IoU от окна усреднения для движущихся сценариев", "Окно, кадров", "IoU", ylim_01=True)
 
     iou_alpha = summary.groupby(["scenario", "alpha"], as_index=False)["iou"].mean()
-    plot_lines(iou_alpha, "alpha", "iou", "scenario", FIG_DIR / "dynamic_extended_iou_vs_alpha.png", "IoU vs alpha", "Alpha", "IoU", ylim_01=True)
+    plot_lines(iou_alpha, "alpha", "iou", "scenario", FIG_DIR / "dynamic_extended_iou_vs_alpha.png", "IoU от alpha", "Alpha", "IoU", ylim_01=True)
 
     peak_alpha = summary.groupby(["scenario", "alpha"], as_index=False)["peak_amplitude_ratio"].mean()
-    plot_lines(peak_alpha, "alpha", "peak_amplitude_ratio", "scenario", FIG_DIR / "dynamic_extended_peak_amplitude_ratio_vs_alpha.png", "Peak amplitude ratio vs alpha", "Alpha", "Peak amplitude ratio")
+    plot_lines(peak_alpha, "alpha", "peak_amplitude_ratio", "scenario", FIG_DIR / "dynamic_extended_peak_amplitude_ratio_vs_alpha.png", "Относительная пиковая амплитуда от alpha", "Alpha", "Относительная пиковая амплитуда")
 
     center = delay_tracking[delay_tracking["scenario"].isin(MOVING_SCENARIOS)].copy()
     center["alpha_window"] = center["alpha"].map(lambda x: f"a={x:g}") + ", w=" + center["window"].astype(str)
     pivot = center.pivot_table(index="scenario", columns="alpha_window", values="center_error_px_mean", aggfunc="mean")
-    save_heatmap(pivot, FIG_DIR / "dynamic_extended_center_error_vs_alpha_window.png", "Center error by scenario and alpha/window", "Center error, px")
+    save_heatmap(pivot, FIG_DIR / "dynamic_extended_center_error_vs_alpha_window.png", "Ошибка центра по сценарию и alpha/window", "Ошибка центра, px")
 
     tpr_fpr = summary.groupby("scenario", as_index=False).agg(tpr=("tpr", "mean"), fpr=("fpr", "mean"))
     x = np.arange(len(tpr_fpr))
@@ -590,9 +610,9 @@ def plot_required_graphs(summary: pd.DataFrame, delay_tracking: pd.DataFrame) ->
     ax.bar(x - 0.18, tpr_fpr["tpr"], width=0.36, label="TPR")
     ax.bar(x + 0.18, tpr_fpr["fpr"], width=0.36, label="FPR")
     ax.set_xticks(x)
-    ax.set_xticklabels(tpr_fpr["scenario"], rotation=35, ha="right")
-    ax.set_ylabel("Metric value")
-    ax.set_title("TPR/FPR by scenario")
+    ax.set_xticklabels([display_label(scenario) for scenario in tpr_fpr["scenario"]], rotation=35, ha="right")
+    ax.set_ylabel("Значение метрики")
+    ax.set_title("TPR/FPR по сценариям")
     ax.set_ylim(0, 1.03)
     ax.grid(True, axis="y", alpha=0.3)
     ax.legend()
@@ -602,18 +622,18 @@ def plot_required_graphs(summary: pd.DataFrame, delay_tracking: pd.DataFrame) ->
 
     heat_data = summary.copy()
     heat_data["alpha_window"] = heat_data["alpha"].map(lambda x: f"a={x:g}") + ", w=" + heat_data["window"].astype(str)
-    save_heatmap(heat_data.pivot_table(index="scenario", columns="alpha_window", values="iou", aggfunc="mean"), FIG_DIR / "dynamic_extended_heatmap_iou_scenario_alpha_window.png", "IoU heatmap by scenario and alpha/window", "IoU", vmin=0, vmax=1)
+    save_heatmap(heat_data.pivot_table(index="scenario", columns="alpha_window", values="iou", aggfunc="mean"), FIG_DIR / "dynamic_extended_heatmap_iou_scenario_alpha_window.png", "Тепловая карта IoU по сценарию и alpha/window", "IoU", vmin=0, vmax=1)
 
     delay_heat = heat_data[heat_data["scenario"].isin(APPEARING_SCENARIOS)].pivot_table(index="scenario", columns="alpha_window", values="detection_delay_frames", aggfunc="mean")
-    save_heatmap(delay_heat, FIG_DIR / "dynamic_extended_heatmap_delay_scenario_alpha_window.png", "Delay heatmap by scenario and alpha/window", "Delay, frames")
+    save_heatmap(delay_heat, FIG_DIR / "dynamic_extended_heatmap_delay_scenario_alpha_window.png", "Тепловая карта задержки по сценарию и alpha/window", "Задержка, кадров")
 
     trade = summary[summary["scenario"].isin(APPEARING_SCENARIOS)].dropna(subset=["detection_delay_frames"])
     fig, ax = plt.subplots(figsize=(7.6, 5.2))
     for scenario, sub in trade.groupby("scenario"):
-        ax.scatter(sub["snr_like"], sub["detection_delay_frames"], label=scenario, s=45)
+        ax.scatter(sub["snr_like"], sub["detection_delay_frames"], label=display_label(scenario), s=45)
     ax.set_xlabel("SNR-like")
-    ax.set_ylabel("Detection delay, frames")
-    ax.set_title("Trade-off: SNR-like vs detection delay")
+    ax.set_ylabel("Задержка обнаружения, кадров")
+    ax.set_title("Компромисс: SNR-like и задержка обнаружения")
     ax.grid(True, alpha=0.3)
     ax.legend(fontsize=8)
     fig.tight_layout()
@@ -635,7 +655,7 @@ def save_heatmap(pivot: pd.DataFrame, path: Path, title: str, cbar_label: str, *
     ax.set_xticks(range(len(pivot.columns)))
     ax.set_xticklabels(pivot.columns, rotation=45, ha="right", fontsize=8)
     ax.set_yticks(range(len(pivot.index)))
-    ax.set_yticklabels(pivot.index, fontsize=8)
+    ax.set_yticklabels([display_label(index) for index in pivot.index], fontsize=8)
     ax.set_title(title)
     for y in range(values.shape[0]):
         for x in range(values.shape[1]):
@@ -661,16 +681,16 @@ def load_pred_masks(scenario: str, alpha: float, window: int) -> np.ndarray:
 
 def plot_sequence_figures(sequences: dict[str, ScenarioSequence]) -> None:
     mapping = [
-        ("static", "dynamic_extended_static_frames_fixed_scale.png", "Static scenario"),
-        ("appearing", "dynamic_extended_appearing_frames_fixed_scale.png", "Appearing scenario"),
-        ("moving", "dynamic_extended_moving_frames_fixed_scale.png", "Moving scenario"),
-        ("moving_fast", "dynamic_extended_moving_fast_frames_fixed_scale.png", "Fast moving scenario"),
-        ("moving_diagonal", "dynamic_extended_moving_diagonal_frames_fixed_scale.png", "Diagonal moving scenario"),
-        ("appearing_and_growing", "dynamic_extended_appearing_growing_frames_fixed_scale.png", "Appearing and growing scenario"),
-        ("intermittent", "dynamic_extended_intermittent_frames_fixed_scale.png", "Intermittent scenario"),
-        ("background_drift", "dynamic_extended_background_drift_frames_fixed_scale.png", "Background drift scenario"),
-        ("two_anomalies_static_dynamic", "dynamic_extended_two_anomalies_frames_fixed_scale.png", "Two anomalies scenario"),
-        ("moving_with_noise_burst", "dynamic_extended_noise_burst_frames_fixed_scale.png", "Moving with noise burst scenario"),
+        ("static", "dynamic_extended_static_frames_fixed_scale.png", "Статический сценарий"),
+        ("appearing", "dynamic_extended_appearing_frames_fixed_scale.png", "Сценарий появления"),
+        ("moving", "dynamic_extended_moving_frames_fixed_scale.png", "Сценарий движения"),
+        ("moving_fast", "dynamic_extended_moving_fast_frames_fixed_scale.png", "Быстрое движение"),
+        ("moving_diagonal", "dynamic_extended_moving_diagonal_frames_fixed_scale.png", "Диагональное движение"),
+        ("appearing_and_growing", "dynamic_extended_appearing_growing_frames_fixed_scale.png", "Появление и рост аномалии"),
+        ("intermittent", "dynamic_extended_intermittent_frames_fixed_scale.png", "Прерывистая аномалия"),
+        ("background_drift", "dynamic_extended_background_drift_frames_fixed_scale.png", "Дрейф фона"),
+        ("two_anomalies_static_dynamic", "dynamic_extended_two_anomalies_frames_fixed_scale.png", "Две аномалии"),
+        ("moving_with_noise_burst", "dynamic_extended_noise_burst_frames_fixed_scale.png", "Движение со всплеском шума"),
     ]
     for scenario, filename, title in mapping:
         times = DISPLAY_TIMES[scenario]
@@ -688,7 +708,7 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
         for t in times:
             images.append(processed[t])
             titles.append(f"alpha={alpha:g}, t={t}")
-    fixed_scale_montage(images, titles, FIG_DIR / "dynamic_extended_alpha_comparison_appearing.png", "Appearing object: alpha comparison", cols=len(times))
+    fixed_scale_montage(images, titles, FIG_DIR / "dynamic_extended_alpha_comparison_appearing.png", "Появляющийся объект: сравнение alpha", cols=len(times))
 
     times = [0, 20, 40, 79]
     images = []
@@ -698,7 +718,7 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
         for t in times:
             images.append(processed[t])
             titles.append(f"w={window}, t={t}")
-    fixed_scale_montage(images, titles, FIG_DIR / "dynamic_extended_window_comparison_moving.png", "Moving object: window comparison, alpha=0.6", cols=len(times))
+    fixed_scale_montage(images, titles, FIG_DIR / "dynamic_extended_window_comparison_moving.png", "Движущийся объект: сравнение окна, alpha=0.6", cols=len(times))
 
     mask_images = []
     mask_titles = []
@@ -707,7 +727,7 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
         for t in [20, 25, 40]:
             mask_images.append(masks[t].astype(float))
             mask_titles.append(f"alpha={alpha:g}, t={t}")
-    mask_montage(mask_images, mask_titles, FIG_DIR / "dynamic_extended_masks_alpha_comparison_appearing.png", "Predicted masks: appearing alpha comparison", cols=3)
+    mask_montage(mask_images, mask_titles, FIG_DIR / "dynamic_extended_masks_alpha_comparison_appearing.png", "Найденные маски: появление, сравнение alpha", cols=3)
 
     mask_images = []
     mask_titles = []
@@ -716,7 +736,7 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
         for t in [20, 40, 79]:
             mask_images.append(masks[t].astype(float))
             mask_titles.append(f"w={window}, t={t}")
-    mask_montage(mask_images, mask_titles, FIG_DIR / "dynamic_extended_masks_window_comparison_moving.png", "Predicted masks: moving window comparison, alpha=0.6", cols=3)
+    mask_montage(mask_images, mask_titles, FIG_DIR / "dynamic_extended_masks_window_comparison_moving.png", "Найденные маски: движение, сравнение окна, alpha=0.6", cols=3)
 
     truth = sequences["moving"].masks
     pred = load_pred_masks("moving", 0.6, 10)
@@ -727,7 +747,7 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
         ax.imshow(image)
         ax.set_title(title)
         ax.set_axis_off()
-    fig.suptitle("Moving object overlay, alpha=0.6, window=10: TP green, FP red, FN blue")
+    fig.suptitle("Наложение для движущегося объекта, alpha=0.6, window=10: TP зеленый, FP красный, FN синий")
     fig.savefig(FIG_DIR / "dynamic_extended_overlay_moving_window10.png", dpi=180)
     plt.close(fig)
 

@@ -65,7 +65,8 @@ class DetectionResult:
 
 def experiment_dir(number: int, name: str, *, reset: bool = True) -> Path:
     out_dir = RESULTS_DIR / f"experiment_{number:02d}_{name}"
-    if reset and out_dir.exists():
+    preserve_existing = os.environ.get("SERIES3_PRESERVE_DIR") == "1"
+    if reset and out_dir.exists() and not preserve_existing:
         shutil.rmtree(out_dir)
     for subdir in ["arrays", "images", "masks", "examples"]:
         (out_dir / subdir).mkdir(parents=True, exist_ok=True)
@@ -448,7 +449,7 @@ def save_mask_png(path: Path, mask: np.ndarray) -> None:
     cv2.imwrite(str(path), (mask.astype(np.uint8) * 255))
 
 
-def save_heatmap(path: Path, array: np.ndarray, title: str, cbar_label: str = "ADC code") -> None:
+def save_heatmap(path: Path, array: np.ndarray, title: str, cbar_label: str = "Код ADC") -> None:
     plt.figure(figsize=(6.2, 4.4))
     plt.imshow(array, cmap="inferno")
     plt.title(title)

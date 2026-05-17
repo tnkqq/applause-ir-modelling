@@ -1,0 +1,30 @@
+{
+  "seed": 3602,
+  "height": 96,
+  "width": 128,
+  "background_K": 300.0,
+  "delta_T_K": [
+    2.0,
+    4.0,
+    8.0
+  ],
+  "anomaly_sizes_px": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "fill_factors": [
+    1.0,
+    0.75,
+    0.5,
+    0.25,
+    0.1
+  ],
+  "num_frames": 12,
+  "noise_sigma_adc": 2.0,
+  "fpn_std_adc": 0.5,
+  "detector": "global median + 3 * robust_sigma",
+  "success_iou": 0.3
+}
