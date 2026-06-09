@@ -12,6 +12,7 @@ import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from textwrap import fill
 from typing import Any
 
 import matplotlib
@@ -89,6 +90,13 @@ SCENARIO_TITLES = {
     "small_moving_target": "Малая движущаяся цель",
 }
 
+TITLE_FONTSIZE = 24
+LABEL_FONTSIZE = 21
+TICK_FONTSIZE = 16
+SMALL_FONTSIZE = 17
+PARAMETER_FONTSIZE = 26
+HEATMAP_VALUE_FONTSIZE = 14
+
 
 @dataclass
 class ScenarioSequence:
@@ -120,6 +128,25 @@ def token(value: float) -> str:
 def display_label(value: Any) -> str:
     text = str(value)
     return SCENARIO_TITLES.get(text, text)
+
+
+def apply_large_plot_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.size": LABEL_FONTSIZE,
+            "axes.titlesize": TITLE_FONTSIZE,
+            "axes.labelsize": LABEL_FONTSIZE,
+            "xtick.labelsize": TICK_FONTSIZE,
+            "ytick.labelsize": TICK_FONTSIZE,
+            "legend.fontsize": SMALL_FONTSIZE,
+            "legend.title_fontsize": SMALL_FONTSIZE,
+            "figure.titlesize": TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 46) -> str:
+    return fill(title, width=width)
 
 
 def ensure_inputs() -> None:
@@ -536,17 +563,19 @@ def fixed_scale_montage(images: list[np.ndarray], titles: list[str], path: Path,
     rows = int(math.ceil(len(images) / cols))
     vmin = float(min(np.min(image) for image in images))
     vmax = float(max(np.max(image) for image in images))
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 3.0, rows * 2.7), squeeze=False, constrained_layout=True)
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.7, rows * 4.7), squeeze=False, constrained_layout=True)
     last = None
     for idx, ax in enumerate(axes.ravel()):
         if idx < len(images):
             last = ax.imshow(images[idx], cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_title(titles[idx], fontsize=9)
+            ax.set_title(wrap_title(titles[idx], width=22), fontsize=PARAMETER_FONTSIZE, fontweight="bold", pad=10)
         ax.set_axis_off()
     if last is not None:
-        fig.colorbar(last, ax=axes, label="Код ADC")
-    fig.suptitle(f"{suptitle} (единая цветовая шкала)", fontsize=12)
-    fig.savefig(path, dpi=180)
+        cbar = fig.colorbar(last, ax=axes)
+        cbar.set_label("Код ADC", fontsize=LABEL_FONTSIZE)
+        cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.suptitle(wrap_title(f"{suptitle} (единая цветовая шкала)", width=58), fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(path, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -554,32 +583,32 @@ def mask_montage(images: list[np.ndarray], titles: list[str], path: Path, suptit
     if cols is None:
         cols = len(images)
     rows = int(math.ceil(len(images) / cols))
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 2.6, rows * 2.4), squeeze=False, constrained_layout=True)
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.0, rows * 4.2), squeeze=False, constrained_layout=True)
     for idx, ax in enumerate(axes.ravel()):
         if idx < len(images):
             ax.imshow(images[idx], cmap="gray", vmin=0, vmax=1)
-            ax.set_title(titles[idx], fontsize=9)
+            ax.set_title(wrap_title(titles[idx], width=22), fontsize=PARAMETER_FONTSIZE - 2, fontweight="bold", pad=10)
         ax.set_axis_off()
-    fig.suptitle(suptitle, fontsize=12)
-    fig.savefig(path, dpi=180)
+    fig.suptitle(wrap_title(suptitle, width=58), fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(path, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def plot_lines(summary: pd.DataFrame, x: str, y: str, group: str, path: Path, title: str, xlabel: str, ylabel: str, *, ylim_01: bool = False, scenarios: list[str] | None = None) -> None:
     data = summary if scenarios is None else summary[summary["scenario"].isin(scenarios)]
-    plt.figure(figsize=(8.4, 5.2))
+    plt.figure(figsize=(13.0, 7.6))
     for label, sub in data.groupby(group):
         curve = sub.groupby(x, as_index=False)[y].mean().sort_values(x)
-        plt.plot(curve[x], curve[y], marker="o", linewidth=2.0, label=display_label(label))
+        plt.plot(curve[x], curve[y], marker="o", linewidth=2.8, markersize=7, label=display_label(label))
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.title(title)
+    plt.title(wrap_title(title))
     if ylim_01:
         plt.ylim(-0.03, 1.03)
     plt.grid(True, alpha=0.3)
-    plt.legend(fontsize=8, ncols=2)
+    plt.legend(fontsize=SMALL_FONTSIZE, ncols=2)
     plt.tight_layout()
-    plt.savefig(path, dpi=180)
+    plt.savefig(path, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
 
@@ -606,18 +635,18 @@ def plot_required_graphs(summary: pd.DataFrame, delay_tracking: pd.DataFrame) ->
 
     tpr_fpr = summary.groupby("scenario", as_index=False).agg(tpr=("tpr", "mean"), fpr=("fpr", "mean"))
     x = np.arange(len(tpr_fpr))
-    fig, ax = plt.subplots(figsize=(10.5, 5.2))
+    fig, ax = plt.subplots(figsize=(15.5, 7.4), constrained_layout=True)
     ax.bar(x - 0.18, tpr_fpr["tpr"], width=0.36, label="TPR")
     ax.bar(x + 0.18, tpr_fpr["fpr"], width=0.36, label="FPR")
     ax.set_xticks(x)
-    ax.set_xticklabels([display_label(scenario) for scenario in tpr_fpr["scenario"]], rotation=35, ha="right")
-    ax.set_ylabel("Значение метрики")
-    ax.set_title("TPR/FPR по сценариям")
+    ax.set_xticklabels([display_label(scenario) for scenario in tpr_fpr["scenario"]], rotation=35, ha="right", fontsize=SMALL_FONTSIZE)
+    ax.set_ylabel("Значение метрики", fontsize=LABEL_FONTSIZE)
+    ax.set_title("TPR/FPR по сценариям", fontsize=TITLE_FONTSIZE)
+    ax.tick_params(axis="y", labelsize=TICK_FONTSIZE)
     ax.set_ylim(0, 1.03)
     ax.grid(True, axis="y", alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(FIG_DIR / "dynamic_extended_tpr_fpr_by_scenario.png", dpi=180)
+    ax.legend(fontsize=SMALL_FONTSIZE)
+    fig.savefig(FIG_DIR / "dynamic_extended_tpr_fpr_by_scenario.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
     heat_data = summary.copy()
@@ -628,23 +657,23 @@ def plot_required_graphs(summary: pd.DataFrame, delay_tracking: pd.DataFrame) ->
     save_heatmap(delay_heat, FIG_DIR / "dynamic_extended_heatmap_delay_scenario_alpha_window.png", "Тепловая карта задержки по сценарию и alpha/window", "Задержка, кадров")
 
     trade = summary[summary["scenario"].isin(APPEARING_SCENARIOS)].dropna(subset=["detection_delay_frames"])
-    fig, ax = plt.subplots(figsize=(7.6, 5.2))
+    fig, ax = plt.subplots(figsize=(11.2, 7.0), constrained_layout=True)
     for scenario, sub in trade.groupby("scenario"):
-        ax.scatter(sub["snr_like"], sub["detection_delay_frames"], label=display_label(scenario), s=45)
-    ax.set_xlabel("SNR-like")
-    ax.set_ylabel("Задержка обнаружения, кадров")
-    ax.set_title("Компромисс: SNR-like и задержка обнаружения")
+        ax.scatter(sub["snr_like"], sub["detection_delay_frames"], label=display_label(scenario), s=80)
+    ax.set_xlabel("SNR-like", fontsize=LABEL_FONTSIZE)
+    ax.set_ylabel("Задержка обнаружения, кадров", fontsize=LABEL_FONTSIZE)
+    ax.set_title(wrap_title("Компромисс: SNR-like и задержка обнаружения"), fontsize=TITLE_FONTSIZE)
+    ax.tick_params(labelsize=TICK_FONTSIZE)
     ax.grid(True, alpha=0.3)
-    ax.legend(fontsize=8)
-    fig.tight_layout()
-    fig.savefig(FIG_DIR / "dynamic_extended_tradeoff_snr_delay.png", dpi=180)
+    ax.legend(fontsize=SMALL_FONTSIZE)
+    fig.savefig(FIG_DIR / "dynamic_extended_tradeoff_snr_delay.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def save_heatmap(pivot: pd.DataFrame, path: Path, title: str, cbar_label: str, *, vmin: float | None = None, vmax: float | None = None) -> None:
     pivot = pivot.sort_index()
-    fig_w = max(8.0, 0.55 * len(pivot.columns))
-    fig_h = max(3.8, 0.35 * len(pivot.index) + 1.2)
+    fig_w = max(16.5, 1.18 * len(pivot.columns))
+    fig_h = max(7.0, 0.65 * len(pivot.index) + 2.4)
     fig, ax = plt.subplots(figsize=(fig_w, fig_h), constrained_layout=True)
     values = pivot.to_numpy(dtype=float)
     if vmax is None and np.isfinite(values).any():
@@ -653,17 +682,19 @@ def save_heatmap(pivot: pd.DataFrame, path: Path, title: str, cbar_label: str, *
         vmin = float(np.nanmin(values)) if np.isfinite(values).any() else 0.0
     im = ax.imshow(values, cmap="viridis", aspect="auto", vmin=vmin, vmax=vmax)
     ax.set_xticks(range(len(pivot.columns)))
-    ax.set_xticklabels(pivot.columns, rotation=45, ha="right", fontsize=8)
+    ax.set_xticklabels(pivot.columns, rotation=45, ha="right", fontsize=TICK_FONTSIZE, fontweight="bold")
     ax.set_yticks(range(len(pivot.index)))
-    ax.set_yticklabels([display_label(index) for index in pivot.index], fontsize=8)
-    ax.set_title(title)
+    ax.set_yticklabels([display_label(index) for index in pivot.index], fontsize=TICK_FONTSIZE)
+    ax.set_title(wrap_title(title), fontsize=TITLE_FONTSIZE)
     for y in range(values.shape[0]):
         for x in range(values.shape[1]):
             value = values[y, x]
             text = "-" if np.isnan(value) else f"{value:.2f}"
-            ax.text(x, y, text, ha="center", va="center", color="white" if np.isfinite(value) and value > (vmin + (vmax - vmin) * 0.55 if vmax != vmin else 0.5) else "black", fontsize=6)
-    fig.colorbar(im, ax=ax, label=cbar_label)
-    fig.savefig(path, dpi=180)
+            ax.text(x, y, text, ha="center", va="center", color="white" if np.isfinite(value) and value > (vmin + (vmax - vmin) * 0.55 if vmax != vmin else 0.5) else "black", fontsize=HEATMAP_VALUE_FONTSIZE)
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_label, fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.savefig(path, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -742,13 +773,13 @@ def plot_alpha_window_comparisons(sequences: dict[str, ScenarioSequence], config
     pred = load_pred_masks("moving", 0.6, 10)
     overlays = [overlay(truth[t], pred[t]) for t in [20, 40, 60, 79]]
     titles = [f"t={t}" for t in [20, 40, 60, 79]]
-    fig, axes = plt.subplots(1, 4, figsize=(11.5, 3.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, 4, figsize=(19.0, 5.4), constrained_layout=True)
     for ax, image, title in zip(axes, overlays, titles):
         ax.imshow(image)
-        ax.set_title(title)
+        ax.set_title(title, fontsize=PARAMETER_FONTSIZE, fontweight="bold", pad=10)
         ax.set_axis_off()
-    fig.suptitle("Наложение для движущегося объекта, alpha=0.6, window=10: TP зеленый, FP красный, FN синий")
-    fig.savefig(FIG_DIR / "dynamic_extended_overlay_moving_window10.png", dpi=180)
+    fig.suptitle("Наложение для движущегося объекта, alpha=0.6, window=10\nTP зел. | FP красн. | FN син.", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(FIG_DIR / "dynamic_extended_overlay_moving_window10.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -898,6 +929,7 @@ The script does not modify the original experiment 06 `config.json`, `summary.js
 
 
 def main() -> None:
+    apply_large_plot_style()
     ensure_inputs()
     ensure_dirs()
     config = normalize_config(read_json(EXPERIMENT_DIR / "config.json"))

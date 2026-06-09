@@ -13,6 +13,7 @@ import json
 import math
 import sys
 from pathlib import Path
+from textwrap import fill
 from typing import Any
 
 import matplotlib
@@ -46,12 +47,36 @@ SHAPES = ["circle", "rectangle", "gaussian"]
 PROFILE_DELTA_T = 2.0
 COMPARISON_DELTAS = [1.0, 1.5, 2.0, 3.0]
 
+TITLE_FONTSIZE = 24
+LABEL_FONTSIZE = 21
+TICK_FONTSIZE = 17
+SMALL_FONTSIZE = 16
+
 
 SHAPE_TITLES = {
     "circle": "Круг",
     "rectangle": "Прямоугольник",
     "gaussian": "Гауссова аномалия",
 }
+
+
+def apply_large_plot_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.size": LABEL_FONTSIZE,
+            "axes.titlesize": TITLE_FONTSIZE,
+            "axes.labelsize": LABEL_FONTSIZE,
+            "xtick.labelsize": TICK_FONTSIZE,
+            "ytick.labelsize": TICK_FONTSIZE,
+            "legend.fontsize": SMALL_FONTSIZE,
+            "legend.title_fontsize": SMALL_FONTSIZE,
+            "figure.titlesize": TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 42) -> str:
+    return fill(title, width=width)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -127,44 +152,46 @@ def aggregate_metrics(metrics: pd.DataFrame, iou_success: float) -> tuple[pd.Dat
 
 
 def save_line_plot(df: pd.DataFrame, metric: str, ylabel: str, filename: str, ylim_01: bool = True) -> None:
-    plt.figure(figsize=(7.6, 4.8))
+    fig, ax = plt.subplots(figsize=(10.8, 6.8), constrained_layout=True)
     for shape in SHAPES:
         sub = df[df["shape"] == shape]
-        plt.plot(sub["delta_t_K"], sub[metric], marker="o", linewidth=2.0, label=SHAPE_TITLES[shape])
-    plt.xlabel("Delta T, K")
-    plt.ylabel(ylabel)
-    plt.title(f"{ylabel} от Delta T для разных форм")
+        ax.plot(sub["delta_t_K"], sub[metric], marker="o", linewidth=3.0, markersize=8, label=SHAPE_TITLES[shape])
+    ax.set_xlabel("Delta T, K", fontsize=LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=LABEL_FONTSIZE)
+    ax.set_title(wrap_title(f"{ylabel} от Delta T для разных форм"), fontsize=TITLE_FONTSIZE)
     if ylim_01:
-        plt.ylim(-0.03, 1.03)
-    plt.grid(True, alpha=0.3)
-    plt.legend(title="Форма")
-    plt.tight_layout()
-    plt.savefig(OUT_DIR / filename, dpi=180)
-    plt.close()
+        ax.set_ylim(-0.03, 1.03)
+    ax.tick_params(labelsize=TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    ax.legend(title="Форма", fontsize=SMALL_FONTSIZE, title_fontsize=SMALL_FONTSIZE)
+    fig.savefig(OUT_DIR / filename, dpi=180, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
 
 
 def save_heatmap(df: pd.DataFrame, value_col: str, title: str, filename: str) -> None:
     pivot = df.pivot(index="shape", columns="delta_t_K", values=value_col).loc[SHAPES]
-    fig, ax = plt.subplots(figsize=(9.0, 3.4))
+    fig, ax = plt.subplots(figsize=(13.8, 5.8), constrained_layout=True)
     im = ax.imshow(pivot.to_numpy(), aspect="auto", cmap="viridis", vmin=0.0, vmax=1.0)
     ax.set_xticks(np.arange(len(pivot.columns)))
     ax.set_xticklabels([f"{x:g}" for x in pivot.columns])
     ax.set_yticks(np.arange(len(pivot.index)))
     ax.set_yticklabels([SHAPE_TITLES[shape] for shape in pivot.index])
-    ax.set_xlabel("Delta T, K")
-    ax.set_ylabel("Форма")
-    ax.set_title(title)
+    ax.set_xlabel("Delta T, K", fontsize=LABEL_FONTSIZE)
+    ax.set_ylabel("Форма", fontsize=LABEL_FONTSIZE)
+    ax.set_title(wrap_title(title), fontsize=TITLE_FONTSIZE)
+    ax.tick_params(labelsize=TICK_FONTSIZE)
     for row in range(pivot.shape[0]):
         for col in range(pivot.shape[1]):
             value = pivot.iat[row, col]
-            ax.text(col, row, f"{value:.2f}", ha="center", va="center", color="white" if value < 0.55 else "black", fontsize=8)
+            ax.text(col, row, f"{value:.2f}", ha="center", va="center", color="white" if value < 0.55 else "black", fontsize=SMALL_FONTSIZE)
     cbar_titles = {
         "iou_mean": "Средний IoU",
         "detection_probability": "Вероятность обнаружения",
     }
-    fig.colorbar(im, ax=ax, label=cbar_titles.get(value_col, value_col))
-    fig.tight_layout()
-    fig.savefig(OUT_DIR / filename, dpi=180)
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_titles.get(value_col, value_col), fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.savefig(OUT_DIR / filename, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -222,23 +249,25 @@ def make_temperature_fields(config: dict[str, Any]) -> None:
 
     vmin = float(config["background_k"])
     vmax = float(config["background_k"]) + PROFILE_DELTA_T
-    fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(15.5, 4.9), constrained_layout=True)
     for ax, scene, shape in zip(axes, scenes, SHAPES):
         im = ax.imshow(scene, cmap="inferno", vmin=vmin, vmax=vmax)
-        ax.set_title(SHAPE_TITLES[shape])
+        ax.set_title(SHAPE_TITLES[shape], fontsize=TITLE_FONTSIZE)
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="Температура, K")
-    fig.suptitle("Эталонные температурные поля, Delta T = 2.0 K")
-    fig.savefig(FIG_DIR / "shape_analysis_ground_truth_temperature_fields.png", dpi=180)
+    cbar = fig.colorbar(im, ax=axes)
+    cbar.set_label("Температура, K", fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.suptitle("Эталонные температурные поля,\nDelta T = 2.0 K", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(FIG_DIR / "shape_analysis_ground_truth_temperature_fields.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
-    fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(15.5, 4.9), constrained_layout=True)
     for ax, mask, shape in zip(axes, masks, SHAPES):
         ax.imshow(mask.astype(float), cmap="gray", vmin=0, vmax=1)
-        ax.set_title(SHAPE_TITLES[shape])
+        ax.set_title(SHAPE_TITLES[shape], fontsize=TITLE_FONTSIZE)
         ax.set_axis_off()
-    fig.suptitle("Бинарные эталонные маски; поле gaussian гладкое, маска бинарная")
-    fig.savefig(FIG_DIR / "shape_analysis_ground_truth_masks.png", dpi=180)
+    fig.suptitle("Бинарные эталонные маски;\nполе gaussian гладкое, маска бинарная", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(FIG_DIR / "shape_analysis_ground_truth_masks.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -248,14 +277,14 @@ def make_prediction_comparison(config: dict[str, Any], delta_t: float) -> None:
     frame_vmin = min(float(np.min(frame)) for frame in frames)
     frame_vmax = max(float(np.max(frame)) for frame in frames)
 
-    fig, axes = plt.subplots(len(SHAPES), 4, figsize=(12.5, 8.4), constrained_layout=True)
+    fig, axes = plt.subplots(len(SHAPES), 4, figsize=(19.5, 13.8), constrained_layout=True)
     for row, (shape, (scene, truth, frame, pred, snr)) in enumerate(zip(SHAPES, examples)):
         metric = binary_metrics(pred, truth)
         panels = [
             ("Синтетический ИК-кадр", frame, "magma", frame_vmin, frame_vmax),
             ("Эталонная маска", truth.astype(float), "gray", 0, 1),
             ("Найденная маска", pred.astype(float), "gray", 0, 1),
-            ("Наложение: TP зеленый, FP красный, FN синий", overlay_error(truth, pred), None, None, None),
+            ("Наложение\nTP зел. | FP красн. | FN син.", overlay_error(truth, pred), None, None, None),
         ]
         for col, (title, data, cmap, vmin, vmax) in enumerate(panels):
             ax = axes[row, col]
@@ -264,13 +293,13 @@ def make_prediction_comparison(config: dict[str, Any], delta_t: float) -> None:
             else:
                 ax.imshow(data, cmap=cmap, vmin=vmin, vmax=vmax)
             if row == 0:
-                ax.set_title(title, fontsize=10)
+                ax.set_title(title, fontsize=TITLE_FONTSIZE - 4)
             if col == 0:
-                ax.set_ylabel(f"{SHAPE_TITLES[shape]}\nIoU={metric['iou']:.2f}\nTPR={metric['tpr']:.2f}\nSNR={snr:.2f}", fontsize=9)
+                ax.set_ylabel(f"{SHAPE_TITLES[shape]}\nIoU={metric['iou']:.2f}\nTPR={metric['tpr']:.2f}\nSNR={snr:.2f}", fontsize=TITLE_FONTSIZE - 5)
             ax.set_xticks([])
             ax.set_yticks([])
-    fig.suptitle(f"Сравнение обнаружения по формам, Delta T = {delta_t:g} K", fontsize=13)
-    fig.savefig(FIG_DIR / f"shape_analysis_prediction_comparison_delta_t_{fmt_delta(delta_t)}.png", dpi=180)
+    fig.suptitle(f"Сравнение обнаружения по формам, Delta T = {delta_t:g} K", fontsize=TITLE_FONTSIZE + 3)
+    fig.savefig(FIG_DIR / f"shape_analysis_prediction_comparison_delta_t_{fmt_delta(delta_t)}.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -285,25 +314,28 @@ def make_gaussian_profile(config: dict[str, Any]) -> None:
     )
     center_row = scene.shape[0] // 2
     profile = scene[center_row, :] - float(config["background_k"])
-    fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.6), constrained_layout=True)
+    fig, axes = plt.subplots(3, 1, figsize=(9.8, 15.6), constrained_layout=True)
     im = axes[0].imshow(scene, cmap="inferno", vmin=float(config["background_k"]), vmax=float(config["background_k"]) + PROFILE_DELTA_T)
-    axes[0].set_title("Гауссово температурное поле")
+    axes[0].set_title("Гауссово температурное поле", fontsize=TITLE_FONTSIZE)
     axes[0].set_axis_off()
-    fig.colorbar(im, ax=axes[0], label="Температура, K")
+    cbar = fig.colorbar(im, ax=axes[0])
+    cbar.set_label("Температура, K", fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
 
-    axes[1].plot(np.arange(len(profile)), profile, color="#1f77b4", linewidth=2.0)
-    axes[1].axhline(PROFILE_DELTA_T * 0.5, color="#d62728", linestyle="--", label="порог маски: weight >= 0.5")
-    axes[1].set_title("1D-профиль через центр")
-    axes[1].set_xlabel("Пиксель x")
-    axes[1].set_ylabel("Превышение температуры, K")
+    axes[1].plot(np.arange(len(profile)), profile, color="#1f77b4", linewidth=3.0)
+    axes[1].axhline(PROFILE_DELTA_T * 0.5, color="#d62728", linestyle="--", linewidth=2.5, label="порог маски: weight >= 0.5")
+    axes[1].set_title("1D-профиль через центр", fontsize=TITLE_FONTSIZE)
+    axes[1].set_xlabel("Пиксель x", fontsize=LABEL_FONTSIZE)
+    axes[1].set_ylabel("Превышение температуры, K", fontsize=LABEL_FONTSIZE)
+    axes[1].tick_params(labelsize=TICK_FONTSIZE)
     axes[1].grid(True, alpha=0.3)
-    axes[1].legend(fontsize=8)
+    axes[1].legend(fontsize=SMALL_FONTSIZE)
 
     axes[2].imshow(mask.astype(float), cmap="gray", vmin=0, vmax=1)
-    axes[2].set_title("Бинарная маска gaussian")
+    axes[2].set_title("Бинарная маска gaussian", fontsize=TITLE_FONTSIZE)
     axes[2].set_axis_off()
-    fig.suptitle("Гауссова аномалия: гладкое поле температуры и бинарная маска")
-    fig.savefig(FIG_DIR / "shape_analysis_gaussian_profile_explanation.png", dpi=180)
+    fig.suptitle("Гауссова аномалия:\nгладкое поле температуры и бинарная маска", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(FIG_DIR / "shape_analysis_gaussian_profile_explanation.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -435,6 +467,7 @@ and detection probability even when all other sensor parameters are fixed.
 
 
 def main() -> None:
+    apply_large_plot_style()
     ensure_inputs()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     FIG_DIR.mkdir(parents=True, exist_ok=True)

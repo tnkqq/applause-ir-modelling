@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from textwrap import fill
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 if __package__ is None or __package__ == "":
@@ -33,6 +35,12 @@ from experiments.series3.common import (
     write_summary_json,
 )
 
+PLOT_TITLE_FONTSIZE = 24
+PLOT_LABEL_FONTSIZE = 21
+PLOT_TICK_FONTSIZE = 17
+PLOT_SMALL_FONTSIZE = 18
+PLOT_PARAMETER_FONTSIZE = 28
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate temporal inertia and frame averaging.")
@@ -44,6 +52,63 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--event_start", type=int, default=20)
     parser.add_argument("--threshold_k", type=float, default=3.0)
     return parser.parse_args()
+
+
+def apply_large_plot_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.size": PLOT_LABEL_FONTSIZE,
+            "axes.titlesize": PLOT_TITLE_FONTSIZE,
+            "axes.labelsize": PLOT_LABEL_FONTSIZE,
+            "xtick.labelsize": PLOT_TICK_FONTSIZE,
+            "ytick.labelsize": PLOT_TICK_FONTSIZE,
+            "legend.fontsize": PLOT_SMALL_FONTSIZE,
+            "legend.title_fontsize": PLOT_SMALL_FONTSIZE,
+            "figure.titlesize": PLOT_TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 42) -> str:
+    return fill(title, width=width)
+
+
+def save_line_plot(path: Path, x: object, y: object, title: str, xlabel: str, ylabel: str) -> None:
+    fig, ax = plt.subplots(figsize=(10.8, 6.8), constrained_layout=True)
+    ax.plot(list(x), list(y), marker="o", linewidth=3.0, markersize=8)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_multi_line_plot(path: Path, series: dict[str, tuple[object, object]], title: str, xlabel: str, ylabel: str) -> None:
+    fig, ax = plt.subplots(figsize=(11.5, 7.0), constrained_layout=True)
+    for label, (x, y) in series.items():
+        ax.plot(list(x), list(y), marker="o", linewidth=2.8, markersize=7, label=label)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=PLOT_SMALL_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_montage(path: Path, images: list[np.ndarray], titles: list[str], *, cmap: str = "inferno", cols: int = 3) -> None:
+    rows = int(np.ceil(len(images) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.8, rows * 4.8), squeeze=False, constrained_layout=True)
+    for idx, ax in enumerate(axes.ravel()):
+        if idx < len(images):
+            ax.imshow(images[idx], cmap=cmap)
+            ax.set_title(wrap_title(titles[idx], width=20), fontsize=PLOT_PARAMETER_FONTSIZE, fontweight="bold", pad=10)
+        ax.set_axis_off()
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.10)
+    plt.close(fig)
 
 
 def build_sequence(args: argparse.Namespace, rng: np.random.Generator, scenario: str) -> tuple[np.ndarray, list[np.ndarray]]:
@@ -71,6 +136,7 @@ def build_sequence(args: argparse.Namespace, rng: np.random.Generator, scenario:
 
 def main() -> None:
     args = parse_args()
+    apply_large_plot_style()
     out_dir = experiment_dir(6, "temporal_dynamics")
     rng = rng_from_seed(args.seed)
     alphas = [0.0, 0.3, 0.6, 0.9]

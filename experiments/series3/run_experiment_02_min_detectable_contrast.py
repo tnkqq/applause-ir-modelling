@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from textwrap import fill
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 if __package__ is None or __package__ == "":
@@ -19,16 +21,18 @@ from experiments.series3.common import (
     generate_adc_frame,
     region_snr,
     rng_from_seed,
-    save_heatmap,
-    save_line_plot,
     save_mask_png,
-    save_montage,
     scene_with_anomaly,
     write_csv,
     write_json,
     write_readme,
     write_summary_json,
 )
+
+
+EXP02_TITLE_FONTSIZE = 22
+EXP02_LABEL_FONTSIZE = 19
+EXP02_TICK_FONTSIZE = 16
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,9 +49,71 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def apply_large_plot_style() -> None:
+    """Настройка крупного шрифта для рисунков эксперимента 02."""
+    plt.rcParams.update(
+        {
+            "font.size": EXP02_LABEL_FONTSIZE,
+            "axes.titlesize": EXP02_TITLE_FONTSIZE,
+            "axes.labelsize": EXP02_LABEL_FONTSIZE,
+            "xtick.labelsize": EXP02_TICK_FONTSIZE,
+            "ytick.labelsize": EXP02_TICK_FONTSIZE,
+            "legend.fontsize": EXP02_TICK_FONTSIZE,
+            "legend.title_fontsize": EXP02_TICK_FONTSIZE,
+            "figure.titlesize": EXP02_TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 38) -> str:
+    return fill(title, width=width)
+
+
+def save_exp02_heatmap(path: Path, array: np.ndarray, title: str, cbar_label: str = "Код ADC") -> None:
+    fig, ax = plt.subplots(figsize=(9.4, 6.2), constrained_layout=True)
+    im = ax.imshow(array, cmap="inferno")
+    ax.set_title(wrap_title(title), fontsize=EXP02_TITLE_FONTSIZE)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_label, fontsize=EXP02_LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=EXP02_TICK_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.15)
+    plt.close(fig)
+
+
+def save_exp02_line_plot(path: Path, x, y, title: str, xlabel: str, ylabel: str) -> None:
+    fig, ax = plt.subplots(figsize=(9.8, 6.2), constrained_layout=True)
+    ax.plot(list(x), list(y), marker="o", linewidth=2.8, markersize=8)
+    ax.set_title(wrap_title(title), fontsize=EXP02_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=EXP02_LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=EXP02_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=EXP02_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.15)
+    plt.close(fig)
+
+
+def save_exp02_montage(path: Path, images: list[np.ndarray], titles: list[str], *, cmap: str = "inferno", cols: int = 3) -> None:
+    rows = int(np.ceil(len(images) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 4.9, rows * 4.0), constrained_layout=True)
+    axes_array = np.asarray(axes).reshape(rows, cols)
+    for idx, (image, title) in enumerate(zip(images, titles)):
+        ax = axes_array.flat[idx]
+        ax.imshow(image, cmap=cmap)
+        ax.set_title(wrap_title(title, width=24), fontsize=EXP02_TICK_FONTSIZE + 1)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    for idx in range(len(images), rows * cols):
+        axes_array.flat[idx].axis("off")
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.10)
+    plt.close(fig)
+
+
 def main() -> None:
     args = parse_args()
-    out_dir = experiment_dir(2, "min_detectable_contrast")
+    apply_large_plot_style()
+    out_dir = experiment_dir(2, "min_detectable_contrast", reset=False)
     rng = rng_from_seed(args.seed)
     delta_values = np.array([0.1, 0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0])
     shapes = ["circle", "rectangle", "gaussian"]
@@ -93,7 +159,7 @@ def main() -> None:
                 )
                 records.append(metrics)
                 if frame_idx == 0 and delta_t in example_deltas and shape == "circle":
-                    save_heatmap(out_dir / "images" / f"frame_{shape}_dT_{delta_t:g}K.png", frame, f"Круг, Delta T={delta_t:g} K")
+                    save_exp02_heatmap(out_dir / "images" / f"frame_{shape}_dT_{delta_t:g}K.png", frame, f"Круг, Delta T={delta_t:g} K")
                     save_mask_png(out_dir / "images" / f"prediction_{shape}_dT_{delta_t:g}K.png", result.mask)
                     examples.extend([frame, truth.astype(float), result.mask.astype(float)])
                     example_titles.extend([f"Кадр, Delta T={delta_t:g} K", "Эталонная маска", "Найденная маска"])
@@ -109,10 +175,10 @@ def main() -> None:
     )
     grouped.to_csv(out_dir / "metrics_by_delta_t.csv", index=False)
 
-    save_line_plot(out_dir / "tpr_vs_delta_t.png", grouped["delta_t_K"], grouped["tpr"], "TPR от температурного контраста", "Delta T, K", "TPR")
-    save_line_plot(out_dir / "fpr_vs_delta_t.png", grouped["delta_t_K"], grouped["fpr"], "FPR от температурного контраста", "Delta T, K", "FPR")
-    save_line_plot(out_dir / "iou_vs_delta_t.png", grouped["delta_t_K"], grouped["iou"], "IoU от температурного контраста", "Delta T, K", "IoU")
-    save_line_plot(
+    save_exp02_line_plot(out_dir / "tpr_vs_delta_t.png", grouped["delta_t_K"], grouped["tpr"], "TPR от температурного контраста", "Delta T, K", "TPR")
+    save_exp02_line_plot(out_dir / "fpr_vs_delta_t.png", grouped["delta_t_K"], grouped["fpr"], "FPR от температурного контраста", "Delta T, K", "FPR")
+    save_exp02_line_plot(out_dir / "iou_vs_delta_t.png", grouped["delta_t_K"], grouped["iou"], "IoU от температурного контраста", "Delta T, K", "IoU")
+    save_exp02_line_plot(
         out_dir / "detection_probability_vs_delta_t.png",
         grouped["delta_t_K"],
         grouped["detection_probability"],
@@ -120,7 +186,7 @@ def main() -> None:
         "Delta T, K",
         "P(IoU > порог)",
     )
-    save_montage(out_dir / "examples_low_mid_high_delta_t.png", examples, example_titles, cols=3)
+    save_exp02_montage(out_dir / "examples_low_mid_high_delta_t.png", examples, example_titles, cols=3)
 
     candidates = grouped[grouped["detection_probability"] >= 0.9]
     d_t_min = float(candidates["delta_t_K"].iloc[0]) if len(candidates) else float("nan")

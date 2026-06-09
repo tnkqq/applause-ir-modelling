@@ -11,6 +11,7 @@ import json
 import math
 import sys
 from pathlib import Path
+from textwrap import fill
 from typing import Any
 
 import matplotlib
@@ -42,6 +43,29 @@ QUANT_STEPS = [1, 2, 4, 8, 16, 32, 64]
 SELECTED_STEPS = [1, 4, 16, 64]
 DETECTION_IOU_THRESHOLD = 0.3
 GAUSSIAN_SIGMA_ADC = 1.0
+TITLE_FONTSIZE = 24
+LABEL_FONTSIZE = 21
+TICK_FONTSIZE = 17
+SMALL_FONTSIZE = 15
+
+
+def apply_large_plot_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.size": LABEL_FONTSIZE,
+            "axes.titlesize": TITLE_FONTSIZE,
+            "axes.labelsize": LABEL_FONTSIZE,
+            "xtick.labelsize": TICK_FONTSIZE,
+            "ytick.labelsize": TICK_FONTSIZE,
+            "legend.fontsize": SMALL_FONTSIZE,
+            "legend.title_fontsize": SMALL_FONTSIZE,
+            "figure.titlesize": TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 42) -> str:
+    return fill(title, width=width)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -202,7 +226,7 @@ def aggregate(metrics_df: pd.DataFrame, hist_df: pd.DataFrame) -> tuple[pd.DataF
 
 
 def save_metric_plot(summary: pd.DataFrame, ycols: list[str], labels: list[str], ylabel: str, title: str, filename: str, ylim_01: bool = False) -> None:
-    plt.figure(figsize=(7.6, 4.8))
+    plt.figure(figsize=(11.2, 6.9))
     for ycol, label in zip(ycols, labels):
         values = summary[ycol].to_numpy(dtype=float)
         finite = values[np.isfinite(values)]
@@ -214,24 +238,24 @@ def save_metric_plot(summary: pd.DataFrame, ycols: list[str], labels: list[str],
         if finite.size and np.any(~np.isfinite(values)):
             for step, raw_value, plot_value in zip(summary["quant_step"], values, plot_values):
                 if not np.isfinite(raw_value):
-                    plt.annotate("inf\nsigma_bg=0", (step, plot_value), textcoords="offset points", xytext=(0, 8), ha="center", fontsize=8)
+                    plt.annotate("inf\nsigma_bg=0", (step, plot_value), textcoords="offset points", xytext=(0, 10), ha="center", fontsize=SMALL_FONTSIZE)
     plt.xscale("log", base=2)
     plt.xticks(QUANT_STEPS, [str(v) for v in QUANT_STEPS])
     plt.xlabel("Шаг квантования, коды ADC")
     plt.ylabel(ylabel)
-    plt.title(title)
+    plt.title(wrap_title(title))
     if ylim_01:
         plt.ylim(-0.03, 1.03)
     plt.grid(True, alpha=0.3)
     if len(ycols) > 1:
         plt.legend()
     plt.tight_layout()
-    plt.savefig(OUT_DIR / filename, dpi=180)
+    plt.savefig(OUT_DIR / filename, dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
 
 def save_unique_levels_plot(hist_summary: pd.DataFrame) -> None:
-    plt.figure(figsize=(7.6, 4.8))
+    plt.figure(figsize=(11.2, 6.9))
     for col, label in [
         ("unique_levels_frame_mean", "Весь кадр"),
         ("unique_levels_bg_mean", "Фон"),
@@ -243,16 +267,16 @@ def save_unique_levels_plot(hist_summary: pd.DataFrame) -> None:
     plt.xticks(QUANT_STEPS, [str(v) for v in QUANT_STEPS])
     plt.xlabel("Шаг квантования, коды ADC")
     plt.ylabel("Число уникальных цифровых уровней")
-    plt.title("Число уникальных уровней ADC от шага квантования")
+    plt.title(wrap_title("Число уникальных уровней ADC от шага квантования"))
     plt.grid(True, alpha=0.3, which="both")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(OUT_DIR / "quantization_analysis_unique_levels_vs_quant_step.png", dpi=180)
+    plt.savefig(OUT_DIR / "quantization_analysis_unique_levels_vs_quant_step.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
 
 def save_histograms(reference_frames: list[np.ndarray], truth: np.ndarray) -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(10.2, 7.2), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(14.2, 10.2), constrained_layout=True)
     axes_flat = axes.ravel()
     for ax, quant_step in zip(axes_flat, SELECTED_STEPS):
         bg_values: list[np.ndarray] = []
@@ -266,13 +290,14 @@ def save_histograms(reference_frames: list[np.ndarray], truth: np.ndarray) -> No
         bins = np.arange(min(bg.min(), anom.min()) - quant_step, max(bg.max(), anom.max()) + 2 * quant_step, max(quant_step, 1))
         ax.hist(bg, bins=bins, alpha=0.65, label="Фон", color="#4c78a8")
         ax.hist(anom, bins=bins, alpha=0.65, label="Аномалия", color="#f58518")
-        ax.set_title(f"шаг={quant_step}")
-        ax.set_xlabel("Код ADC")
-        ax.set_ylabel("Число пикселей")
+        ax.set_title(f"шаг={quant_step}", fontsize=TITLE_FONTSIZE - 3)
+        ax.set_xlabel("Код ADC", fontsize=LABEL_FONTSIZE)
+        ax.set_ylabel("Число пикселей", fontsize=LABEL_FONTSIZE)
+        ax.tick_params(labelsize=TICK_FONTSIZE)
         ax.grid(True, axis="y", alpha=0.25)
-        ax.legend(fontsize=8)
-    fig.suptitle("Гистограммы фона и аномалии для разных шагов квантования")
-    fig.savefig(OUT_DIR / "quantization_analysis_histograms_by_quant_step.png", dpi=180)
+        ax.legend(fontsize=SMALL_FONTSIZE)
+    fig.suptitle("Гистограммы фона и аномалии\nдля разных шагов квантования", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(OUT_DIR / "quantization_analysis_histograms_by_quant_step.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -292,14 +317,16 @@ def save_frames_comparison(reference: np.ndarray) -> None:
     titles = ["Опорный кадр"] + [f"шаг={step}" for step in steps]
     vmin = min(float(np.min(img)) for img in images)
     vmax = max(float(np.max(img)) for img in images)
-    fig, axes = plt.subplots(2, 4, figsize=(13.2, 6.4), constrained_layout=True)
+    fig, axes = plt.subplots(2, 4, figsize=(18.0, 9.0), constrained_layout=True)
     for ax, image, title in zip(axes.ravel(), images, titles):
         im = ax.imshow(image, cmap="magma", vmin=vmin, vmax=vmax)
-        ax.set_title(title)
+        ax.set_title(title, fontsize=TITLE_FONTSIZE - 4)
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="Код ADC")
-    fig.suptitle("Один кадр при разных шагах квантования")
-    fig.savefig(OUT_DIR / "quantization_analysis_frames_comparison.png", dpi=180)
+    cbar = fig.colorbar(im, ax=axes)
+    cbar.set_label("Код ADC", fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.suptitle("Один кадр при разных шагах квантования", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(OUT_DIR / "quantization_analysis_frames_comparison.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -307,20 +334,22 @@ def save_error_maps(reference: np.ndarray) -> None:
     steps = [2, 4, 8, 16, 32, 64]
     errors = [quantize_by_step(reference, step) - reference for step in steps]
     vmax = max(float(np.max(np.abs(err))) for err in errors)
-    fig, axes = plt.subplots(2, 3, figsize=(11.5, 6.8), constrained_layout=True)
+    fig, axes = plt.subplots(2, 3, figsize=(16.0, 9.2), constrained_layout=True)
     for ax, error, step in zip(axes.ravel(), errors, steps):
         im = ax.imshow(error, cmap="coolwarm", vmin=-vmax, vmax=vmax)
-        ax.set_title(f"шаг={step}")
+        ax.set_title(f"шаг={step}", fontsize=TITLE_FONTSIZE - 4)
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="I_quantized - I_reference, ADC")
-    fig.suptitle("Карты ошибки квантования")
-    fig.savefig(OUT_DIR / "quantization_analysis_error_maps.png", dpi=180)
+    cbar = fig.colorbar(im, ax=axes)
+    cbar.set_label("I_quantized - I_reference, ADC", fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.suptitle("Карты ошибки квантования", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(OUT_DIR / "quantization_analysis_error_maps.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def save_masks_comparison(config: dict[str, Any], reference: np.ndarray, truth: np.ndarray) -> None:
     steps = [1, 4, 16, 64]
-    fig, axes = plt.subplots(len(steps), 3, figsize=(9.5, 9.8), constrained_layout=True)
+    fig, axes = plt.subplots(len(steps), 3, figsize=(14.5, 15.6), constrained_layout=True)
     for row, step in enumerate(steps):
         frame = quantize_by_step(reference, step)
         pred = detect_global_threshold(frame, k=float(config["threshold_k"]), min_area=5).mask
@@ -328,7 +357,7 @@ def save_masks_comparison(config: dict[str, Any], reference: np.ndarray, truth: 
         panels = [
             ("Эталонная маска", truth.astype(float), "gray"),
             ("Найденная маска", pred.astype(float), "gray"),
-            ("Наложение: TP зеленый, FP красный, FN синий", overlay_error(truth, pred), None),
+            ("Наложение\nTP зел. | FP красн. | FN син.", overlay_error(truth, pred), None),
         ]
         for col, (title, data, cmap) in enumerate(panels):
             ax = axes[row, col]
@@ -337,20 +366,20 @@ def save_masks_comparison(config: dict[str, Any], reference: np.ndarray, truth: 
             else:
                 ax.imshow(data)
             if row == 0:
-                ax.set_title(title)
+                ax.set_title(title, fontsize=TITLE_FONTSIZE - 4)
             if col == 0:
-                ax.set_ylabel(f"шаг={step}\nIoU={metrics['iou']:.2f}\nTPR={metrics['tpr']:.2f}")
+                ax.set_ylabel(f"шаг={step}\nIoU={metrics['iou']:.2f}\nTPR={metrics['tpr']:.2f}", fontsize=TITLE_FONTSIZE - 5)
             ax.set_xticks([])
             ax.set_yticks([])
-    fig.suptitle("Маски обнаружения при разных шагах квантования")
-    fig.savefig(OUT_DIR / "quantization_analysis_masks_comparison.png", dpi=180)
+    fig.suptitle("Маски обнаружения при разных шагах квантования", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(OUT_DIR / "quantization_analysis_masks_comparison.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def save_profiles(reference: np.ndarray, truth: np.ndarray) -> None:
     row = reference.shape[0] // 2
     xs = np.arange(reference.shape[1])
-    plt.figure(figsize=(9.5, 5.2))
+    plt.figure(figsize=(13.5, 7.4))
     plt.plot(xs, reference[row, :], color="black", linewidth=2.0, label="Опорный кадр")
     for step in [1, 4, 16, 64]:
         plt.step(xs, quantize_by_step(reference, step)[row, :], where="mid", linewidth=1.6, label=f"шаг={step}")
@@ -359,11 +388,11 @@ def save_profiles(reference: np.ndarray, truth: np.ndarray) -> None:
         plt.axvspan(cols.min(), cols.max(), color="#f58518", alpha=0.14, label="Область аномалии")
     plt.xlabel("Пиксель x через центр аномалии")
     plt.ylabel("Код ADC")
-    plt.title("Центральный 1D-профиль: ступенчатость из-за квантования")
+    plt.title(wrap_title("Центральный 1D-профиль: ступенчатость из-за квантования"))
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(OUT_DIR / "quantization_analysis_profiles.png", dpi=180)
+    plt.savefig(OUT_DIR / "quantization_analysis_profiles.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
 
@@ -373,14 +402,16 @@ def save_background_zoom(reference: np.ndarray) -> None:
     images = [quantize_by_step(reference, step)[crop] for step in steps]
     vmin = min(float(np.min(img)) for img in images)
     vmax = max(float(np.max(img)) for img in images)
-    fig, axes = plt.subplots(1, len(steps), figsize=(11.5, 3.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, len(steps), figsize=(17.0, 4.8), constrained_layout=True)
     for ax, image, step in zip(axes, images, steps):
         im = ax.imshow(image, cmap="magma", vmin=vmin, vmax=vmax, interpolation="nearest")
-        ax.set_title(f"шаг={step}")
+        ax.set_title(f"шаг={step}", fontsize=TITLE_FONTSIZE - 4)
         ax.set_axis_off()
-    fig.colorbar(im, ax=axes, label="Код ADC")
-    fig.suptitle("Фрагмент фона: квантование делает поле более ступенчатым")
-    fig.savefig(OUT_DIR / "quantization_analysis_background_zoom.png", dpi=180)
+    cbar = fig.colorbar(im, ax=axes)
+    cbar.set_label("Код ADC", fontsize=LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=TICK_FONTSIZE)
+    fig.suptitle("Фрагмент фона:\nквантование делает поле более ступенчатым", fontsize=TITLE_FONTSIZE + 2)
+    fig.savefig(OUT_DIR / "quantization_analysis_background_zoom.png", dpi=180, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -556,6 +587,7 @@ judging quantization quality.
 
 
 def main() -> None:
+    apply_large_plot_style()
     ensure_inputs()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     config = read_json(EXPERIMENT_DIR / "config.json")

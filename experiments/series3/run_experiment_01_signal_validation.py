@@ -8,6 +8,7 @@ import json
 import math
 import sys
 from pathlib import Path
+from textwrap import fill
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -65,11 +66,22 @@ VIGNETTING_MODES = {
     "medium": {"title": "Среднее виньетирование", "fov_deg": 42.0, "strength_order": 2.0},
     "strong": {"title": "Сильное виньетирование", "fov_deg": 68.0, "strength_order": 3.0},
 }
+VIGNETTING_SHORT_TITLES = {
+    "none": "Без\nвиньетирования",
+    "weak": "Слабое\nвиньетирование",
+    "medium": "Среднее\nвиньетирование",
+    "strong": "Сильное\nвиньетирование",
+}
 
 FILL_DELTAS = [2.0, 4.0, 8.0]
 FILL_FACTORS = [1.0, 0.75, 0.5, 0.25, 0.1]
 FILL_SIZES = [1, 2, 4, 8, 16]
 FILL_TEST_DELTA = 4.0
+
+PLOT_TITLE_FONTSIZE = 24
+PLOT_LABEL_FONTSIZE = 21
+PLOT_TICK_FONTSIZE = 17
+PLOT_SMALL_FONTSIZE = 16
 
 
 def parse_args() -> argparse.Namespace:
@@ -90,6 +102,26 @@ def parse_args() -> argparse.Namespace:
 def ensure_dirs() -> None:
     for path in [OUT_DIR, OUT_DIR / "images", OUT_DIR / "masks", BLOCK_01_DIR, BLOCK_03_DIR, BLOCK_04_DIR, BLOCK_05_DIR]:
         path.mkdir(parents=True, exist_ok=True)
+
+
+def apply_large_plot_style() -> None:
+    """Единый крупный стиль подписей для всех рисунков experiment 01."""
+    plt.rcParams.update(
+        {
+            "font.size": PLOT_LABEL_FONTSIZE,
+            "axes.titlesize": PLOT_TITLE_FONTSIZE,
+            "axes.labelsize": PLOT_LABEL_FONTSIZE,
+            "xtick.labelsize": PLOT_TICK_FONTSIZE,
+            "ytick.labelsize": PLOT_TICK_FONTSIZE,
+            "legend.fontsize": PLOT_SMALL_FONTSIZE,
+            "legend.title_fontsize": PLOT_SMALL_FONTSIZE,
+            "figure.titlesize": PLOT_TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 38) -> str:
+    return fill(title, width=width)
 
 
 def json_ready(value: Any) -> Any:
@@ -142,44 +174,82 @@ def mode_sort_key(mode: str) -> int:
     return NUC_MODES.index(mode)
 
 
+def save_heatmap(path: Path, array: np.ndarray, title: str, cbar_label: str = "Код ADC") -> None:
+    fig, ax = plt.subplots(figsize=(9.6, 6.3), constrained_layout=True)
+    im = ax.imshow(array, cmap="inferno")
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_label, fontsize=PLOT_LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_line_plot(path: Path, x: Any, y: Any, title: str, xlabel: str, ylabel: str) -> None:
+    fig, ax = plt.subplots(figsize=(10.4, 6.6), constrained_layout=True)
+    ax.plot(list(x), list(y), marker="o", linewidth=3.0, markersize=8)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_montage(path: Path, images: list[np.ndarray], titles: list[str], *, cmap: str = "inferno", cols: int = 3) -> None:
+    rows = int(math.ceil(len(images) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.0, rows * 4.1), squeeze=False, constrained_layout=True)
+    for idx, ax in enumerate(axes.ravel()):
+        if idx < len(images):
+            ax.imshow(images[idx], cmap=cmap)
+            ax.set_title(wrap_title(titles[idx], width=22), fontsize=PLOT_TITLE_FONTSIZE - 4)
+        ax.set_axis_off()
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.10)
+    plt.close(fig)
+
+
 def save_categorical_line(path: Path, labels: list[str], values: list[float], title: str, ylabel: str) -> None:
-    plt.figure(figsize=(7.2, 4.4))
-    plt.plot(range(len(labels)), values, marker="o", linewidth=2.0)
-    plt.xticks(range(len(labels)), labels)
-    plt.title(title)
-    plt.ylabel(ylabel)
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(path, dpi=170)
-    plt.close()
+    fig, ax = plt.subplots(figsize=(10.5, 6.4), constrained_layout=True)
+    ax.plot(range(len(labels)), values, marker="o", linewidth=3.0, markersize=8)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
 
 
 def save_multiline(path: Path, series: dict[str, tuple[np.ndarray, np.ndarray]], title: str, xlabel: str, ylabel: str) -> None:
-    plt.figure(figsize=(7.6, 4.8))
+    fig, ax = plt.subplots(figsize=(11.2, 6.8), constrained_layout=True)
     for label, (x, y) in series.items():
-        plt.plot(x, y, linewidth=1.8, label=label)
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.grid(True, alpha=0.3)
-    plt.legend(fontsize=8)
-    plt.tight_layout()
-    plt.savefig(path, dpi=170)
-    plt.close()
+        ax.plot(x, y, linewidth=2.5, label=label)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=PLOT_SMALL_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
 
 
 def save_histogram_set(path: Path, values: dict[str, np.ndarray], title: str, xlabel: str) -> None:
-    plt.figure(figsize=(8.0, 4.8))
+    fig, ax = plt.subplots(figsize=(11.5, 6.8), constrained_layout=True)
     for label, data in values.items():
-        plt.hist(np.asarray(data).ravel(), bins=56, alpha=0.45, label=label)
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel("Число пикселей")
-    plt.grid(True, axis="y", alpha=0.3)
-    plt.legend(fontsize=8)
-    plt.tight_layout()
-    plt.savefig(path, dpi=170)
-    plt.close()
+        ax.hist(np.asarray(data).ravel(), bins=56, alpha=0.45, label=label)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xlabel(xlabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel("Число пикселей", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    ax.grid(True, axis="y", alpha=0.3)
+    ax.legend(fontsize=PLOT_SMALL_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
 
 
 def save_image_grid(
@@ -204,49 +274,54 @@ def save_image_grid(
             vmax = max(float(np.max(image)) for image in images)
     else:
         vmin = vmax = None
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 3.3, rows * 2.9), squeeze=False, constrained_layout=True)
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 4.9, rows * 4.1), squeeze=False, constrained_layout=True)
     last = None
     for idx, ax in enumerate(axes.ravel()):
         if idx < len(images):
             last = ax.imshow(images[idx], cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_title(titles[idx], fontsize=9)
+            ax.set_title(wrap_title(titles[idx], width=22), fontsize=PLOT_TITLE_FONTSIZE - 5)
         ax.set_axis_off()
     if last is not None:
-        fig.colorbar(last, ax=axes, label=cbar_label)
-    fig.suptitle(suptitle, fontsize=12)
-    fig.savefig(path, dpi=170)
+        cbar = fig.colorbar(last, ax=axes)
+        cbar.set_label(cbar_label, fontsize=PLOT_LABEL_FONTSIZE)
+        cbar.ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    fig.suptitle(wrap_title(suptitle, width=52), fontsize=PLOT_TITLE_FONTSIZE + 2)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def save_mask_grid(path: Path, images: list[np.ndarray], titles: list[str], suptitle: str, *, cols: int = 4) -> None:
     rows = int(math.ceil(len(images) / cols))
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 2.7, rows * 2.5), squeeze=False, constrained_layout=True)
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 4.2, rows * 3.7), squeeze=False, constrained_layout=True)
     for idx, ax in enumerate(axes.ravel()):
         if idx < len(images):
             ax.imshow(images[idx], cmap="gray", vmin=0, vmax=1)
-            ax.set_title(titles[idx], fontsize=9)
+            ax.set_title(wrap_title(titles[idx], width=20), fontsize=PLOT_TITLE_FONTSIZE - 6)
         ax.set_axis_off()
-    fig.suptitle(suptitle, fontsize=12)
-    fig.savefig(path, dpi=170)
+    fig.suptitle(wrap_title(suptitle, width=52), fontsize=PLOT_TITLE_FONTSIZE + 2)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
 def save_heatmap_matrix(path: Path, matrix: pd.DataFrame, title: str, cbar_label: str) -> None:
-    fig, ax = plt.subplots(figsize=(7.2, 4.8), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(10.2, 6.8), constrained_layout=True)
     values = matrix.to_numpy(dtype=float)
     im = ax.imshow(values, cmap="viridis", aspect="auto")
     ax.set_xticks(range(len(matrix.columns)))
     ax.set_xticklabels([str(col) for col in matrix.columns])
     ax.set_yticks(range(len(matrix.index)))
     ax.set_yticklabels([str(idx) for idx in matrix.index])
-    ax.set_xlabel("fill_factor")
-    ax.set_ylabel("Размер, px")
-    ax.set_title(title)
+    ax.set_xlabel("fill_factor", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_ylabel("Размер, px", fontsize=PLOT_LABEL_FONTSIZE)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
     for y in range(values.shape[0]):
         for x in range(values.shape[1]):
-            ax.text(x, y, f"{values[y, x]:.2f}", ha="center", va="center", fontsize=8, color="white" if values[y, x] > 0.55 else "black")
-    fig.colorbar(im, ax=ax, label=cbar_label)
-    fig.savefig(path, dpi=170)
+            ax.text(x, y, f"{values[y, x]:.2f}", ha="center", va="center", fontsize=PLOT_SMALL_FONTSIZE, color="white" if values[y, x] > 0.55 else "black")
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_label, fontsize=PLOT_LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close(fig)
 
 
@@ -681,7 +756,7 @@ def run_vignetting_block(args: argparse.Namespace) -> dict[str, str]:
     save_multiline(BLOCK_04_DIR / "vignetting_center_row_profile.png", {VIGNETTING_MODES[mode]["title"]: (np.arange(args.width), frame[args.height // 2, :]) for mode, frame in frames.items()}, "Профиль центральной строки", "Пиксель x", "Код ADC")
     save_multiline(BLOCK_04_DIR / "vignetting_center_column_profile.png", {VIGNETTING_MODES[mode]["title"]: (np.arange(args.height), frame[:, args.width // 2]) for mode, frame in frames.items()}, "Профиль центрального столбца", "Пиксель y", "Код ADC")
 
-    labels = [VIGNETTING_MODES[mode]["title"] for mode in VIGNETTING_MODES]
+    labels = [VIGNETTING_SHORT_TITLES[mode] for mode in VIGNETTING_MODES]
     save_categorical_line(BLOCK_04_DIR / "center_to_corner_drop_vs_strength.png", labels, df["center_to_corner_drop_adc"].tolist(), "Падение центр-угол от силы виньетирования", "Падение, ADC")
     save_categorical_line(BLOCK_04_DIR / "vignetting_std_vs_strength.png", labels, df["std_adc"].tolist(), "STD кадра от силы виньетирования", "STD, ADC")
 
@@ -849,44 +924,44 @@ def run_fill_factor_block(args: argparse.Namespace) -> dict[str, str]:
 
     size_plot = 8
     line_df = df[df["anomaly_size_px"] == size_plot]
-    plt.figure(figsize=(7.4, 4.7))
+    plt.figure(figsize=(11.0, 6.8))
     for delta_t, group in line_df.groupby("delta_T_K"):
         group = group.sort_values("fill_factor")
-        plt.plot(group["fill_factor"], group["delta_adc"], marker="o", linewidth=2.0, label=f"Delta T={delta_t:g} K")
-    plt.title("Прирост ADC от fill_factor")
+        plt.plot(group["fill_factor"], group["delta_adc"], marker="o", linewidth=3.0, markersize=8, label=f"Delta T={delta_t:g} K")
+    plt.title(wrap_title("Прирост ADC от fill_factor"))
     plt.xlabel("fill_factor")
     plt.ylabel("Delta ADC")
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(BLOCK_05_DIR / "delta_adc_vs_fill_factor.png", dpi=170)
+    plt.savefig(BLOCK_05_DIR / "delta_adc_vs_fill_factor.png", dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
-    plt.figure(figsize=(7.4, 4.7))
+    plt.figure(figsize=(11.0, 6.8))
     for delta_t, group in line_df.groupby("delta_T_K"):
         group = group.sort_values("fill_factor")
-        plt.plot(group["fill_factor"], group["snr_like"], marker="o", linewidth=2.0, label=f"Delta T={delta_t:g} K")
-    plt.title("SNR-like от fill_factor")
+        plt.plot(group["fill_factor"], group["snr_like"], marker="o", linewidth=3.0, markersize=8, label=f"Delta T={delta_t:g} K")
+    plt.title(wrap_title("SNR-like от fill_factor"))
     plt.xlabel("fill_factor")
     plt.ylabel("SNR-like")
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(BLOCK_05_DIR / "snr_like_vs_fill_factor.png", dpi=170)
+    plt.savefig(BLOCK_05_DIR / "snr_like_vs_fill_factor.png", dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
-    plt.figure(figsize=(6.4, 6.0))
+    plt.figure(figsize=(9.2, 8.6))
     for delta_t, group in df.groupby("delta_T_K"):
-        plt.scatter(group["expected_delta_adc_linear"], group["delta_adc"], label=f"Delta T={delta_t:g} K", s=28)
+        plt.scatter(group["expected_delta_adc_linear"], group["delta_adc"], label=f"Delta T={delta_t:g} K", s=58)
     lim = max(float(df["expected_delta_adc_linear"].max()), float(df["delta_adc"].max())) * 1.05
-    plt.plot([0, lim], [0, lim], "k--", linewidth=1.2, label="Линейное ожидание")
-    plt.title("Проверка линейности delta_adc")
+    plt.plot([0, lim], [0, lim], "k--", linewidth=2.0, label="Линейное ожидание")
+    plt.title(wrap_title("Проверка линейности delta_adc"))
     plt.xlabel("Ожидаемый Delta ADC")
     plt.ylabel("Фактический Delta ADC")
     plt.grid(True, alpha=0.3)
-    plt.legend(fontsize=8)
+    plt.legend(fontsize=PLOT_SMALL_FONTSIZE)
     plt.tight_layout()
-    plt.savefig(BLOCK_05_DIR / "delta_adc_linearity_check.png", dpi=170)
+    plt.savefig(BLOCK_05_DIR / "delta_adc_linearity_check.png", dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
     det_df = df[df["delta_T_K"] == FILL_TEST_DELTA]
@@ -894,18 +969,18 @@ def run_fill_factor_block(args: argparse.Namespace) -> dict[str, str]:
         ("detection_probability", "detection_probability_vs_fill_factor.png", "Вероятность обнаружения от fill_factor", "Вероятность обнаружения"),
         ("iou", "iou_vs_fill_factor.png", "IoU от fill_factor", "IoU"),
     ]:
-        plt.figure(figsize=(7.4, 4.7))
+        plt.figure(figsize=(11.0, 6.8))
         for size, group in det_df.groupby("anomaly_size_px"):
             group = group.sort_values("fill_factor")
-            plt.plot(group["fill_factor"], group[metric], marker="o", linewidth=2.0, label=f"{size}x{size} px")
-        plt.title(title)
+            plt.plot(group["fill_factor"], group[metric], marker="o", linewidth=3.0, markersize=8, label=f"{size}x{size} px")
+        plt.title(wrap_title(title))
         plt.xlabel("fill_factor")
         plt.ylabel(ylabel)
         plt.ylim(-0.03, 1.03)
         plt.grid(True, alpha=0.3)
-        plt.legend(fontsize=8)
+        plt.legend(fontsize=PLOT_SMALL_FONTSIZE)
         plt.tight_layout()
-        plt.savefig(BLOCK_05_DIR / filename, dpi=170)
+        plt.savefig(BLOCK_05_DIR / filename, dpi=170, bbox_inches="tight", pad_inches=0.12)
         plt.close()
 
     iou_matrix = det_df.pivot(index="anomaly_size_px", columns="fill_factor", values="iou")
@@ -919,17 +994,17 @@ def run_fill_factor_block(args: argparse.Namespace) -> dict[str, str]:
             subset = df[(df["delta_T_K"] == delta_t) & (df["fill_factor"] == fill) & (df["detection_probability"] >= 0.8) & (df["iou"] >= 0.3)].sort_values("anomaly_size_px")
             min_rows.append({"delta_T_K": delta_t, "fill_factor": fill, "min_size_px": float(subset["anomaly_size_px"].iloc[0]) if len(subset) else np.nan})
     min_df = pd.DataFrame(min_rows)
-    plt.figure(figsize=(7.4, 4.7))
+    plt.figure(figsize=(11.0, 6.8))
     for delta_t, group in min_df.groupby("delta_T_K"):
         group = group.sort_values("fill_factor")
-        plt.plot(group["fill_factor"], group["min_size_px"], marker="o", linewidth=2.0, label=f"Delta T={delta_t:g} K")
-    plt.title("Минимальный обнаруживаемый размер от fill_factor")
+        plt.plot(group["fill_factor"], group["min_size_px"], marker="o", linewidth=3.0, markersize=8, label=f"Delta T={delta_t:g} K")
+    plt.title(wrap_title("Минимальный обнаруживаемый размер от fill_factor"))
     plt.xlabel("fill_factor")
     plt.ylabel("Минимальный размер, px")
     plt.grid(True, alpha=0.3)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(BLOCK_05_DIR / "min_detectable_size_vs_fill_factor.png", dpi=170)
+    plt.savefig(BLOCK_05_DIR / "min_detectable_size_vs_fill_factor.png", dpi=170, bbox_inches="tight", pad_inches=0.12)
     plt.close()
 
     fill_examples = [1.0, 0.5, 0.25, 0.1]
@@ -1036,6 +1111,7 @@ def write_extended_summary(rows: list[dict[str, str]]) -> None:
 
 def main() -> None:
     args = parse_args()
+    apply_large_plot_style()
     ensure_dirs()
 
     summaries: list[dict[str, str]] = []

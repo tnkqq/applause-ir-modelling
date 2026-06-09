@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from textwrap import fill
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 if __package__ is None or __package__ == "":
@@ -32,6 +34,11 @@ from experiments.series3.common import (
     write_summary_json,
 )
 
+PLOT_TITLE_FONTSIZE = 24
+PLOT_LABEL_FONTSIZE = 21
+PLOT_TICK_FONTSIZE = 17
+PLOT_SMALL_FONTSIZE = 15
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compare simple IR image filters before anomaly detection.")
@@ -42,6 +49,65 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--delta_t", type=float, default=3.5)
     parser.add_argument("--threshold_k", type=float, default=3.0)
     return parser.parse_args()
+
+
+def apply_large_plot_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.size": PLOT_LABEL_FONTSIZE,
+            "axes.titlesize": PLOT_TITLE_FONTSIZE,
+            "axes.labelsize": PLOT_LABEL_FONTSIZE,
+            "xtick.labelsize": PLOT_TICK_FONTSIZE,
+            "ytick.labelsize": PLOT_TICK_FONTSIZE,
+            "legend.fontsize": PLOT_SMALL_FONTSIZE,
+            "legend.title_fontsize": PLOT_SMALL_FONTSIZE,
+            "figure.titlesize": PLOT_TITLE_FONTSIZE + 2,
+        }
+    )
+
+
+def wrap_title(title: str, width: int = 38) -> str:
+    return fill(title, width=width)
+
+
+def save_heatmap(path: Path, array: np.ndarray, title: str, cbar_label: str = "Код ADC") -> None:
+    fig, ax = plt.subplots(figsize=(9.6, 6.3), constrained_layout=True)
+    im = ax.imshow(array, cmap="inferno")
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    cbar = fig.colorbar(im, ax=ax)
+    cbar.set_label(cbar_label, fontsize=PLOT_LABEL_FONTSIZE)
+    cbar.ax.tick_params(labelsize=PLOT_TICK_FONTSIZE)
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_bar_plot(path: Path, labels: list[str], values: list[float], title: str, ylabel: str) -> None:
+    fig, ax = plt.subplots(figsize=(13.0, 7.2), constrained_layout=True)
+    ax.bar(labels, values)
+    ax.set_title(wrap_title(title), fontsize=PLOT_TITLE_FONTSIZE)
+    ax.set_ylabel(ylabel, fontsize=PLOT_LABEL_FONTSIZE)
+    ax.tick_params(axis="y", labelsize=PLOT_TICK_FONTSIZE)
+    ax.tick_params(axis="x", labelsize=PLOT_SMALL_FONTSIZE)
+    ax.grid(True, axis="y", alpha=0.3)
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(28)
+        tick.set_ha("right")
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.12)
+    plt.close(fig)
+
+
+def save_montage(path: Path, images: list[np.ndarray], titles: list[str], *, cmap: str = "inferno", cols: int = 3) -> None:
+    rows = int(np.ceil(len(images) / cols))
+    fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.0, rows * 4.1), squeeze=False, constrained_layout=True)
+    for idx, ax in enumerate(axes.ravel()):
+        if idx < len(images):
+            ax.imshow(images[idx], cmap=cmap)
+            ax.set_title(wrap_title(titles[idx], width=24), fontsize=PLOT_TITLE_FONTSIZE - 5)
+        ax.set_axis_off()
+    fig.savefig(path, dpi=170, bbox_inches="tight", pad_inches=0.10)
+    plt.close(fig)
 
 
 def filter_grid() -> list[tuple[str, str, dict]]:
@@ -75,6 +141,7 @@ def filter_title(label: str) -> str:
 
 def main() -> None:
     args = parse_args()
+    apply_large_plot_style()
     out_dir = experiment_dir(4, "filtering")
     rng = rng_from_seed(args.seed)
     scene, truth = scene_with_anomaly(
